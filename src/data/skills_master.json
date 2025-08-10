@@ -1,18 +1,18 @@
 {
   "ALL_TECHNICAL_SKILLS": {
-    "Programming Languages": ["Python", "Java", "C", "C++", "C#", "JavaScript", "Go", "Rust", "R", "Swift", "Ruby", "PHP"],
-    "Web & Mobile Development": ["HTML5", "CSS3", "React", "Angular", "Vue.js", "Node.js", "Django", "Flask", "Express.js", "Flutter", "Swift", "Kotlin"],
-    "Cloud & DevOps": ["AWS", "Azure", "GCP", "Docker", "Kubernetes", "Terraform", "Ansible", "Jenkins", "CI/CD", "CloudFormation", "GitHub Actions"],
-    "Databases & Big Data": ["SQL", "MySQL", "PostgreSQL", "Oracle", "MongoDB", "Hadoop", "Spark", "Kafka", "ETL", "Data Warehousing"],
-    "AI/ML & Analytics": ["TensorFlow", "PyTorch", "Keras", "Scikit-learn", "XGBoost", "Deep Learning", "NLP", "Computer Vision", "Pandas", "NumPy", "Tableau", "Power BI"],
-    "Software Practices": ["Agile", "Scrum", "Kanban", "Git", "Testing", "Selenium", "CI/CD"],
-    "Systems & Security": ["Linux", "Windows", "macOS", "TCP/IP", "VPN", "Firewall", "Network Security", "Ethical Hacking"],
-    "Industry Tools": ["AutoCAD", "SAP", "Salesforce", "MATLAB", "Adobe Photoshop", "UiPath", "CMS", "WordPress"],
+    "Programming Languages": ["Python", "Java", "C", "C++", "C#", "JavaScript", "Go", "Rust", "R", "Swift", "Ruby", "PHP", "Scala"],
+    "Web & Mobile Development": ["HTML5", "CSS3", "React", "Angular", "Vue.js", "Node.js", "Django", "Flask", "Express.js", "Flutter", "Kotlin"],
+    "Cloud & DevOps": ["AWS", "Azure", "GCP", "Docker", "Kubernetes", "Terraform", "Ansible", "Jenkins", "CI/CD", "CloudFormation", "GitHub Actions", "OpenShift"],
+    "Databases & Big Data": ["SQL", "MySQL", "PostgreSQL", "Oracle", "MongoDB", "Hadoop", "Spark", "Kafka", "ETL", "Data Warehousing", "Cassandra", "Redis"],
+    "AI/ML & Analytics": ["TensorFlow", "PyTorch", "Keras", "Scikit-learn", "XGBoost", "Deep Learning", "NLP", "Computer Vision", "Pandas", "NumPy", "Tableau", "Power BI", "Matplotlib", "Seaborn"],
+    "Software Practices": ["Agile", "Scrum", "Kanban", "Git", "Testing", "Selenium", "TDD", "BDD"],
+    "Systems & Security": ["Linux", "Windows", "macOS", "TCP/IP", "VPN", "Firewall", "Network Security", "Ethical Hacking", "IAM", "Zero Trust"],
+    "Industry Tools": ["AutoCAD", "SAP", "Salesforce", "MATLAB", "Adobe Photoshop", "UiPath", "CMS", "WordPress", "Figma", "Adobe XD", "Sketch"],
     "Blockchain & Web3": ["Solidity", "Rust", "Go", "Ethereum", "Binance Smart Chain", "Polygon", "Solana", "Hyperledger", "Smart Contract Development", "Remix IDE", "Truffle", "Hardhat", "Web3.js", "Ethers.js", "DeFi", "NFT", "IPFS", "Tokenomics", "Proof of Work", "Proof of Stake", "Smart Contract Auditing"],
-    "UX/UI Design": ["Figma", "Adobe XD", "Sketch", "InVision", "Zeplin", "Axure RP", "Balsamiq", "Wireframing", "Prototyping", "User Flows", "Information Architecture", "Responsive Design", "User Interviews", "Usability Testing", "A/B Testing", "Persona Development", "Typography", "Color Theory", "Visual Hierarchy", "Interaction Design", "WCAG", "ARIA Standards", "Design Systems"],
-    "Project Management": ["Agile", "Scrum", "Kanban", "Waterfall", "SAFe", "Lean", "Prince2", "Jira", "Trello", "Asana", "Monday.com", "airfocus", "Microsoft Project", "ClickUp", "Confluence", "Roadmap Planning", "Resource Allocation", "Risk Management", "Stakeholder Communication", "Requirements Gathering", "Change Management", "PMP", "CAPM", "CSM", "SAFe Agilist", "Burndown Charts", "KPIs", "OKRs", "Status Reports"]
+    "UX/UI Design": ["Figma", "Adobe XD", "Sketch", "InVision", "Zeplin", "Axure RP", "Balsamiq", "Wireframing", "Prototyping", "User Flows", "Information Architecture", "Responsive Design", "WCAG", "ARIA Standards", "Design Systems"],
+    "Project Management": ["Agile", "Scrum", "Kanban", "Waterfall", "SAFe", "Lean", "Prince2", "Jira", "Trello", "Asana", "Monday.com", "airfocus", "Microsoft Project", "ClickUp", "Confluence", "Roadmap Planning", "Resource Allocation", "Risk Management", "Stakeholder Communication", "Requirements Gathering", "Change Management", "PMP", "CAPM", "CSM", "SAFe Agilist", "Burndown Charts", "KPIs", "OKRs", "Status Reports"],
+    "Certifications": ["AWS Certified Solutions Architect", "AWS Certified Developer", "AWS Certified SysOps Administrator", "Microsoft Certified: Azure Solutions Architect", "Microsoft Certified: Azure Administrator", "Google Cloud Professional Cloud Architect", "PMP", "CAPM", "CSM", "SAFe Agilist", "Certified Kubernetes Administrator", "Certified Kubernetes Application Developer", "Terraform Associate", "Cisco CCNA", "Cisco CCNP", "CompTIA Security+", "CompTIA Network+", "ITIL Foundation"]
   },
-
   "ROLES": {
     "Data Engineering": {
       "Programming Languages": ["Python", "SQL", "Java", "Scala", "R"],

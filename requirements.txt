@@ -1,3 +1,7 @@
 pdfplumber
 python-docx
+mammoth
+pypandoc
 spacy
+pytesseract
+pdf2image
