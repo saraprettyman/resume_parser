@@ -1,11 +1,12 @@
 # CLI and UI
 rich>=13.5.2
+pyfiglet>=0.8.post1
 
 # PDF text extraction
 PyMuPDF>=1.23.3
+pdfplumber>=0.9.0
 
 # Resume file reading (various formats)
-pdfplumber>=0.9.0
 python-docx>=0.8.11
 mammoth>=1.6.0
 pypandoc>=1.11
@@ -14,8 +15,7 @@ pytesseract>=0.3.10
 
 # Data handling
 numpy>=1.24.3
+pandas>=2.0.3  # For role-specific skill matching and data frames
 
-# If role-specific skill matching uses pandas later
-pandas>=2.0.3
-
-pyfiglet
+# Phone number parsing
+phonenumbers>=8.13.0
