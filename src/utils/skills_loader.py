@@ -11,3 +11,9 @@ def load_skills(file_path=None):
 
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def load_roles(file_path=None):
+    """Return a list of available roles from the skills_master.json."""
+    skills_data = load_skills(file_path)
+    return list(skills_data.get("ROLES", {}).keys())

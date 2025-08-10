@@ -1,7 +1,19 @@
-pdfplumber
-python-docx
-mammoth
-pypandoc
-spacy
-pytesseract
-pdf2image
+# CLI and UI
+rich>=13.5.2
+
+# PDF text extraction
+PyMuPDF>=1.23.3
+
+# Resume file reading (various formats)
+pdfplumber>=0.9.0
+python-docx>=0.8.11
+mammoth>=1.6.0
+pypandoc>=1.11
+pdf2image>=1.16.3
+pytesseract>=0.3.10
+
+# Data handling
+numpy>=1.24.3
+
+# If role-specific skill matching uses pandas later
+pandas>=2.0.3
