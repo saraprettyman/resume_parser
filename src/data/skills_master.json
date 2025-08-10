@@ -1,62 +1,143 @@
 {
   "ALL_TECHNICAL_SKILLS": {
     "Programming Languages": [
-      { "name": "Python", "aliases": ["Py", "Python3", "Python 3", "Jupyter"] },
-      { "name": "Java", "aliases": ["Java SE", "Java EE"] },
-      { "name": "C", "aliases": ["C Lang"] },
-      { "name": "C++", "aliases": ["CPP", "C Plus Plus"] },
-      { "name": "C#", "aliases": ["C Sharp"] },
-      { "name": "JavaScript", "aliases": ["JS", "Java Script", "ECMAScript"] },
+      {
+        "name": "Python",
+        "aliases": [
+          "Py",
+          "Python3",
+          "Python 3",
+          "CPython",
+          "Anaconda",
+          "Jupyter"
+        ]
+      },
+      {
+        "name": "Java",
+        "aliases": ["Java SE", "Java EE", "Java 8", "Java 11", "Java 17"]
+      },
+      { "name": "C", "aliases": ["C Lang", "ANSI C"] },
+      {
+        "name": "C++",
+        "aliases": ["CPP", "C Plus Plus", "C++11", "C++14", "C++17", "C++20"]
+      },
+      { "name": "C#", "aliases": ["C Sharp", ".NET C#", "C# .NET"] },
+      {
+        "name": "JavaScript",
+        "aliases": ["JS", "Java Script", "ECMAScript", "ES6", "ES2015+"]
+      },
       { "name": "Go", "aliases": ["Golang"] },
-      { "name": "Rust", "aliases": [] },
-      { "name": "R", "aliases": ["R Lang", "R Programming"] },
-      { "name": "Swift", "aliases": [] },
-      { "name": "Ruby", "aliases": ["Ruby on Rails"] },
-      { "name": "PHP", "aliases": ["PHP 7", "PHP 8"] },
-      { "name": "Scala", "aliases": [] },
-      { "name": "TypeScript", "aliases": ["TS"] }
+      { "name": "Rust", "aliases": ["Rustlang"] },
+      { "name": "R", "aliases": ["R Lang", "R Programming", "R Stats"] },
+      { "name": "Swift", "aliases": ["Swift 5", "Swift Language"] },
+      { "name": "Ruby", "aliases": ["Ruby on Rails", "RoR"] },
+      {
+        "name": "PHP",
+        "aliases": ["PHP 5", "PHP 7", "PHP 8", "Hypertext Preprocessor"]
+      },
+      { "name": "Scala", "aliases": ["Scala Language"] },
+      { "name": "TypeScript", "aliases": ["TS", "TSX"] },
+      { "name": "Perl", "aliases": ["Perl5", "Perl 5", "Perl 6", "Raku"] },
+      { "name": "Kotlin", "aliases": ["Kotlin JVM", "Kotlin Native"] },
+      { "name": "Objective-C", "aliases": ["Obj-C", "Objective C"] },
+      {
+        "name": "Shell Scripting",
+        "aliases": ["Bash", "Zsh", "Shell Script", "POSIX Shell", "sh", "ksh"]
+      },
+      { "name": "MATLAB", "aliases": ["MATLAB Programming", "MATLAB Script"] },
+      {
+        "name": "Fortran",
+        "aliases": ["Fortran 77", "Fortran 90", "Fortran 95"]
+      },
+      { "name": "Haskell", "aliases": [] },
+      { "name": "Lua", "aliases": [] },
+      { "name": "Groovy", "aliases": [] },
+      { "name": "Dart", "aliases": [] }
     ],
     "Web & Mobile Development": [
-      { "name": "HTML5", "aliases": ["HTML"] },
+      { "name": "HTML5", "aliases": ["HTML", "HyperText Markup Language"] },
       { "name": "CSS3", "aliases": ["CSS", "Cascading Style Sheets"] },
-      { "name": "React", "aliases": ["React.js", "ReactJS"] },
-      { "name": "Angular", "aliases": ["AngularJS", "Angular 2+"] },
-      { "name": "Vue.js", "aliases": ["Vue"] },
-      { "name": "Node.js", "aliases": ["Node"] },
-      { "name": "Django", "aliases": [] },
-      { "name": "Flask", "aliases": [] },
-      { "name": "Express.js", "aliases": ["Express"] },
+      { "name": "React", "aliases": ["React.js", "ReactJS", "React Native"] },
+      {
+        "name": "Angular",
+        "aliases": ["AngularJS", "Angular 2+", "Angular Framework"]
+      },
+      { "name": "Vue.js", "aliases": ["Vue", "VueJS"] },
+      { "name": "Node.js", "aliases": ["Node", "NodeJS"] },
+      { "name": "Django", "aliases": ["Django Framework"] },
+      { "name": "Flask", "aliases": ["Flask Framework"] },
+      { "name": "Express.js", "aliases": ["Express", "ExpressJS"] },
       { "name": "Flutter", "aliases": [] },
-      { "name": "Kotlin", "aliases": [] }
+      { "name": "Kotlin", "aliases": ["Kotlin Android"] },
+      {
+        "name": "ASP.NET",
+        "aliases": [".NET Web Forms", "ASP.NET Core", "ASP.NET MVC"]
+      },
+      { "name": "jQuery", "aliases": [] },
+      { "name": "Bootstrap", "aliases": [] },
+      { "name": "SASS", "aliases": ["SCSS"] },
+      { "name": "Tailwind CSS", "aliases": [] }
     ],
     "Cloud & DevOps": [
-      { "name": "AWS", "aliases": ["Amazon Web Services", "AWS Cloud"] },
-      { "name": "Azure", "aliases": ["Microsoft Azure", "Azure Cloud"] },
-      { "name": "GCP", "aliases": ["Google Cloud Platform", "Google Cloud"] },
-      { "name": "Docker", "aliases": ["Containerization"] },
+      {
+        "name": "AWS",
+        "aliases": [
+          "Amazon Web Services",
+          "AWS Cloud",
+          "AWS Lambda",
+          "AWS EC2",
+          "AWS S3"
+        ]
+      },
+      {
+        "name": "Azure",
+        "aliases": ["Microsoft Azure", "Azure Cloud", "Azure DevOps"]
+      },
+      {
+        "name": "GCP",
+        "aliases": ["Google Cloud Platform", "Google Cloud", "GCE", "GKE"]
+      },
+      { "name": "Docker", "aliases": ["Containerization", "Docker Compose"] },
       { "name": "Kubernetes", "aliases": ["K8s", "Kube"] },
-      { "name": "Terraform", "aliases": [] },
+      {
+        "name": "Terraform",
+        "aliases": ["Infrastructure as Code", "IaC Terraform"]
+      },
       { "name": "Ansible", "aliases": [] },
       { "name": "Jenkins", "aliases": [] },
-      { "name": "CI/CD", "aliases": ["Continuous Integration", "Continuous Deployment", "Build Pipelines"] },
-      { "name": "CloudFormation", "aliases": [] },
+      {
+        "name": "CI/CD",
+        "aliases": [
+          "Continuous Integration",
+          "Continuous Deployment",
+          "Build Pipelines"
+        ]
+      },
+      { "name": "CloudFormation", "aliases": ["AWS CloudFormation"] },
       { "name": "GitHub Actions", "aliases": [] },
       { "name": "OpenShift", "aliases": [] },
-      { "name": "Helm", "aliases": ["Helm Charts"] }
+      { "name": "Helm", "aliases": ["Helm Charts"] },
+      { "name": "Puppet", "aliases": [] },
+      { "name": "Chef", "aliases": [] },
+      { "name": "ArgoCD", "aliases": [] }
     ],
     "Databases & Big Data": [
       { "name": "SQL", "aliases": ["Structured Query Language"] },
       { "name": "MySQL", "aliases": [] },
       { "name": "PostgreSQL", "aliases": ["Postgres"] },
-      { "name": "Oracle", "aliases": ["Oracle DB"] },
+      { "name": "Oracle", "aliases": ["Oracle DB", "Oracle Database"] },
       { "name": "MongoDB", "aliases": ["NoSQL Mongo"] },
-      { "name": "Hadoop", "aliases": [] },
+      { "name": "Hadoop", "aliases": ["Apache Hadoop"] },
       { "name": "Spark", "aliases": ["Apache Spark"] },
       { "name": "Kafka", "aliases": ["Apache Kafka"] },
       { "name": "ETL", "aliases": ["Extract Transform Load"] },
       { "name": "Data Warehousing", "aliases": ["Data Warehouse", "DWH"] },
       { "name": "Cassandra", "aliases": [] },
-      { "name": "Redis", "aliases": [] }
+      { "name": "Redis", "aliases": [] },
+      { "name": "Snowflake", "aliases": [] },
+      { "name": "BigQuery", "aliases": ["Google BigQuery"] },
+      { "name": "MariaDB", "aliases": [] },
+      { "name": "Neo4j", "aliases": ["Graph Database"] }
     ],
     "AI/ML & Analytics": [
       { "name": "TensorFlow", "aliases": ["TF"] },
@@ -64,29 +145,43 @@
       { "name": "Keras", "aliases": [] },
       { "name": "Scikit-learn", "aliases": ["sklearn"] },
       { "name": "XGBoost", "aliases": [] },
+      { "name": "LightGBM", "aliases": [] },
       { "name": "Deep Learning", "aliases": ["Neural Networks"] },
-      { "name": "NLP", "aliases": ["Natural Language Processing", "Text Mining"] },
+      {
+        "name": "NLP",
+        "aliases": ["Natural Language Processing", "Text Mining"]
+      },
       { "name": "Computer Vision", "aliases": ["CV"] },
       { "name": "Pandas", "aliases": [] },
       { "name": "NumPy", "aliases": [] },
       { "name": "Tableau", "aliases": [] },
       { "name": "Power BI", "aliases": [] },
       { "name": "Matplotlib", "aliases": [] },
-      { "name": "Seaborn", "aliases": [] }
+      { "name": "Seaborn", "aliases": [] },
+      { "name": "Jupyter Notebook", "aliases": ["Jupyter"] },
+      { "name": "Data Mining", "aliases": [] },
+      { "name": "Data Visualization", "aliases": [] },
+      { "name": "Model Content Protocol", "aliases": ["MCP"] }
     ],
     "Software Practices": [
-      { "name": "Agile", "aliases": [] },
+      { "name": "Agile", "aliases": ["Agile Methodology"] },
       { "name": "Scrum", "aliases": [] },
       { "name": "Kanban", "aliases": [] },
       { "name": "Git", "aliases": ["Git Version Control"] },
-      { "name": "Testing", "aliases": ["QA Testing"] },
+      { "name": "Testing", "aliases": ["QA Testing", "Software Testing"] },
       { "name": "Selenium", "aliases": [] },
       { "name": "TDD", "aliases": ["Test Driven Development"] },
-      { "name": "BDD", "aliases": ["Behavior Driven Development"] }
+      { "name": "BDD", "aliases": ["Behavior Driven Development"] },
+      { "name": "Unit Testing", "aliases": [] },
+      { "name": "Integration Testing", "aliases": [] },
+      { "name": "Load Testing", "aliases": [] }
     ],
     "Systems & Security": [
-      { "name": "Linux", "aliases": ["Unix-like OS"] },
-      { "name": "Windows", "aliases": ["Windows OS"] },
+      {
+        "name": "Linux",
+        "aliases": ["Unix-like OS", "Ubuntu", "CentOS", "RedHat", "Debian"]
+      },
+      { "name": "Windows", "aliases": ["Windows OS", "Windows Server"] },
       { "name": "macOS", "aliases": ["OSX"] },
       { "name": "TCP/IP", "aliases": [] },
       { "name": "VPN", "aliases": [] },
@@ -94,20 +189,26 @@
       { "name": "Network Security", "aliases": [] },
       { "name": "Ethical Hacking", "aliases": [] },
       { "name": "IAM", "aliases": ["Identity and Access Management"] },
-      { "name": "Zero Trust", "aliases": [] }
+      { "name": "Zero Trust", "aliases": [] },
+      { "name": "Penetration Testing", "aliases": ["Pentesting"] },
+      { "name": "SOC", "aliases": ["Security Operations Center"] },
+      { "name": "SIEM", "aliases": [] }
     ],
     "Industry Tools": [
       { "name": "AutoCAD", "aliases": [] },
       { "name": "SAP", "aliases": [] },
       { "name": "Salesforce", "aliases": [] },
       { "name": "MATLAB", "aliases": [] },
-      { "name": "Adobe Photoshop", "aliases": [] },
+      { "name": "Adobe Photoshop", "aliases": ["Photoshop"] },
       { "name": "UiPath", "aliases": [] },
       { "name": "CMS", "aliases": ["Content Management System"] },
       { "name": "WordPress", "aliases": [] },
       { "name": "Figma", "aliases": [] },
       { "name": "Adobe XD", "aliases": [] },
-      { "name": "Sketch", "aliases": [] }
+      { "name": "Sketch", "aliases": [] },
+      { "name": "Jira", "aliases": [] },
+      { "name": "Confluence", "aliases": [] },
+      { "name": "Notion", "aliases": [] }
     ],
     "Blockchain & Web3": [
       { "name": "Solidity", "aliases": [] },
@@ -130,7 +231,9 @@
       { "name": "Tokenomics", "aliases": [] },
       { "name": "Proof of Work", "aliases": [] },
       { "name": "Proof of Stake", "aliases": [] },
-      { "name": "Smart Contract Auditing", "aliases": [] }
+      { "name": "Smart Contract Auditing", "aliases": [] },
+      { "name": "Metamask", "aliases": [] },
+      { "name": "Chainlink", "aliases": [] }
     ],
     "UX/UI Design": [
       { "name": "Figma", "aliases": [] },
@@ -163,45 +266,245 @@
       { "name": "Monday.com", "aliases": [] },
       { "name": "Microsoft Project", "aliases": [] },
       { "name": "ClickUp", "aliases": [] },
-      { "name": "Confluence", "aliases": [] }
+      { "name": "Confluence", "aliases": [] },
+      { "name": "Smartsheet", "aliases": [] }
     ],
     "Certifications": [
-      { "name": "AWS Certified Solutions Architect", "aliases": [] },
-      { "name": "AWS Certified Developer", "aliases": [] },
-      { "name": "AWS Certified SysOps Administrator", "aliases": [] },
-      { "name": "Microsoft Certified: Azure Solutions Architect", "aliases": [] },
-      { "name": "Microsoft Certified: Azure Administrator", "aliases": [] },
-      { "name": "Google Cloud Professional Cloud Architect", "aliases": [] },
-      { "name": "PMP", "aliases": ["Project Management Professional"] },
-      { "name": "CSM", "aliases": ["Certified Scrum Master"] },
-      { "name": "Certified Kubernetes Administrator", "aliases": [] },
-      { "name": "Terraform Associate", "aliases": [] },
-      { "name": "Cisco CCNA", "aliases": [] },
-      { "name": "CompTIA Security+", "aliases": [] }
+      {
+        "name": "AWS Certified Cloud Practitioner",
+        "aliases": ["AWS CCP", "Cloud Practitioner", "CLF-C01", "CLF-C02"]
+      },
+      {
+        "name": "AWS Certified Solutions Architect – Associate",
+        "aliases": ["AWS SAA", "AWS SAA-C02", "AWS SAA-C03"]
+      },
+      {
+        "name": "AWS Certified Developer – Associate",
+        "aliases": ["AWS CDA", "AWS DVA", "AWS DVA-C01"]
+      },
+      {
+        "name": "AWS Certified SysOps Administrator – Associate",
+        "aliases": ["AWS SOA", "AWS SOA-C02"]
+      },
+      {
+        "name": "AWS Certified Security – Specialty",
+        "aliases": ["AWS SCS", "AWS SCS-C01", "AWS Security Specialty"]
+      },
+      {
+        "name": "Microsoft Certified: Azure Solutions Architect Expert",
+        "aliases": [
+          "Azure Solutions Architect Expert",
+          "AZ-305",
+          "AZ-303",
+          "AZ-304"
+        ]
+      },
+      {
+        "name": "Microsoft Certified: Azure Administrator Associate",
+        "aliases": ["Azure Administrator Associate", "AZ-104"]
+      },
+      {
+        "name": "Google Cloud Professional Cloud Architect",
+        "aliases": ["GCP PCA", "Google PCA", "Professional Cloud Architect"]
+      },
+      {
+        "name": "Certified Kubernetes Administrator",
+        "aliases": ["CKA"]
+      },
+      {
+        "name": "PMP (Project Management Professional)",
+        "aliases": ["PMP", "Project Management Professional"]
+      },
+      {
+        "name": "CSM (Certified Scrum Master)",
+        "aliases": ["CSM", "Scrum Master"]
+      },
+      {
+        "name": "Cisco CCNA",
+        "aliases": ["CCNA", "Cisco Certified Network Associate"]
+      },
+      {
+        "name": "CompTIA Security+",
+        "aliases": ["CompTIA Sec+", "SY0-601"]
+      },
+      {
+        "name": "CompTIA Cloud+",
+        "aliases": ["CompTIA Cloud+", "CV0-003"]
+      },
+      {
+        "name": "CompTIA Network+",
+        "aliases": ["CompTIA Net+", "N10-008"]
+      },
+      {
+        "name": "CompTIA A+",
+        "aliases": ["CompTIA A+", "220-1101", "220-1102"]
+      },
+      {
+        "name": "CompTIA Linux+",
+        "aliases": ["CompTIA Linux+", "XK0-005"]
+      },
+      {
+        "name": "CompTIA PenTest+",
+        "aliases": ["CompTIA PenTest+", "PT0-002"]
+      },
+      {
+        "name": "CompTIA CySA+",
+        "aliases": ["CySA+", "CompTIA Cybersecurity Analyst", "CS0-003"]
+      },
+      {
+        "name": "ITIL Foundation",
+        "aliases": ["ITIL 4 Foundation", "ITIL v4", "ITIL v3"]
+      },
+      {
+        "name": "Certified Cloud Security Professional (CCSP)",
+        "aliases": ["CCSP"]
+      },
+      {
+        "name": "Certified Information Systems Security Professional (CISSP)",
+        "aliases": ["CISSP"]
+      },
+      {
+        "name": "Certified Information Security Manager (CISM)",
+        "aliases": ["CISM"]
+      },
+      {
+        "name": "Certified Information Systems Auditor (CISA)",
+        "aliases": ["CISA"]
+      },
+      {
+        "name": "Certified in Risk and Information Systems Control (CRISC)",
+        "aliases": ["CRISC"]
+      },
+      {
+        "name": "Certified in the Governance of Enterprise IT (CGEIT)",
+        "aliases": ["CGEIT"]
+      },
+      {
+        "name": "Certified Information Privacy Professional (CIPP)",
+        "aliases": ["CIPP", "CIPP/E", "CIPP/US", "CIPP/C", "CIPP/A"]
+      },
+      {
+        "name": "Certified Information Privacy Manager (CIPM)",
+        "aliases": ["CIPM"]
+      },
+      { "name": "Certified Ethical Hacker (CEH)", "aliases": ["CEH"] },
+      { "name": "GIAC Certified Incident Handler", "aliases": ["GCIH"] },
+      { "name": "GIAC Security Essentials Certification", "aliases": ["GSEC"] },
+      {
+        "name": "Google Professional Machine Learning Engineer",
+        "aliases": ["Google Professional ML Engineer", "GCP Professional Machine Learning Engineer"]
+      },
+      {
+        "name": "Microsoft Certified: Azure AI Fundamentals",
+        "aliases": ["AI-900", "Azure AI Fundamentals"]
+      },
+      {
+        "name": "Microsoft Certified: Azure Fundamentals",
+        "aliases": ["AZ-900"]
+      },
+      { "name": "ITIL 4 Foundation", "aliases": ["ITIL Foundation", "ITIL v4"] }
     ]
   },
   "ROLES": {
     "Data Engineering": {
       "Programming Languages": ["Python", "SQL", "Java", "Scala", "R"],
-      "Big Data & Processing": ["Apache Spark", "Hadoop", "Flink", "Beam", "Kafka"],
+      "Big Data & Processing": [
+        "Apache Spark",
+        "Hadoop",
+        "Flink",
+        "Beam",
+        "Kafka"
+      ],
       "Databases": ["MySQL", "PostgreSQL", "MongoDB", "Cassandra", "Redis"],
-      "Cloud & Warehousing": ["Snowflake", "Amazon Redshift", "Google BigQuery", "Azure Synapse Analytics"],
-      "ETL & Orchestration": ["Apache NiFi", "Airflow", "Talend", "Informatica", "dbt"],
-      "Data Modeling": ["Dimensional Modeling", "Star Schema", "Data Lakes", "OLAP", "OLTP"]
+      "Cloud & Warehousing": [
+        "Snowflake",
+        "Amazon Redshift",
+        "Google BigQuery",
+        "Azure Synapse Analytics"
+      ],
+      "ETL & Orchestration": [
+        "Apache NiFi",
+        "Airflow",
+        "Talend",
+        "Informatica",
+        "dbt"
+      ],
+      "Data Modeling": [
+        "Dimensional Modeling",
+        "Star Schema",
+        "Data Lakes",
+        "OLAP",
+        "OLTP"
+      ]
     },
     "Network/Cloud Architecture": {
-      "Cloud Platforms": ["AWS", "Azure", "Google Cloud Platform", "Oracle Cloud"],
-      "Networking": ["TCP/IP", "DNS", "DHCP", "VPN", "MPLS", "IPv4", "IPv6", "BGP", "OSPF"],
-      "Cloud Networking": ["VPC", "Direct Connect", "ExpressRoute", "Cloud Interconnect"],
+      "Cloud Platforms": [
+        "AWS",
+        "Azure",
+        "Google Cloud Platform",
+        "Oracle Cloud"
+      ],
+      "Networking": [
+        "TCP/IP",
+        "DNS",
+        "DHCP",
+        "VPN",
+        "MPLS",
+        "IPv4",
+        "IPv6",
+        "BGP",
+        "OSPF"
+      ],
+      "Cloud Networking": [
+        "VPC",
+        "Direct Connect",
+        "ExpressRoute",
+        "Cloud Interconnect"
+      ],
       "Security": ["IAM", "WAF", "Firewalls", "Zero Trust", "CSPM"],
-      "Automation": ["Terraform", "CloudFormation", "Ansible", "Puppet", "Chef"],
-      "Performance & Monitoring": ["Load Balancers", "Failover Clustering", "Auto Scaling", "CloudWatch", "Azure Monitor", "Prometheus", "Grafana"]
+      "Automation": [
+        "Terraform",
+        "CloudFormation",
+        "Ansible",
+        "Puppet",
+        "Chef"
+      ],
+      "Performance & Monitoring": [
+        "Load Balancers",
+        "Failover Clustering",
+        "Auto Scaling",
+        "CloudWatch",
+        "Azure Monitor",
+        "Prometheus",
+        "Grafana"
+      ]
     },
     "Blockchain Development": {
       "Languages": ["Solidity", "Rust", "Go"],
-      "Platforms": ["Ethereum", "Binance Smart Chain", "Polygon", "Solana", "Hyperledger"],
-      "Development Tools": ["Remix IDE", "Truffle", "Hardhat", "Web3.js", "Ethers.js"],
-      "Concepts": ["DeFi", "NFT", "IPFS", "Tokenomics", "Proof of Work", "Proof of Stake", "Smart Contract Development", "Smart Contract Auditing"]
+      "Platforms": [
+        "Ethereum",
+        "Binance Smart Chain",
+        "Polygon",
+        "Solana",
+        "Hyperledger"
+      ],
+      "Development Tools": [
+        "Remix IDE",
+        "Truffle",
+        "Hardhat",
+        "Web3.js",
+        "Ethers.js"
+      ],
+      "Concepts": [
+        "DeFi",
+        "NFT",
+        "IPFS",
+        "Tokenomics",
+        "Proof of Work",
+        "Proof of Stake",
+        "Smart Contract Development",
+        "Smart Contract Auditing"
+      ]
     }
   }
 }

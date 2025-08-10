@@ -50,13 +50,15 @@ class ResumeSkillExtractor:
         return extracted, score
 
     def _match_skills(self, skills, resume_text, resume_lower, verbose):
-        """Match skills from skills_master.json against resume."""
+        """Match skills from skills_master.json against resume, punctuation-safe."""
         found, missing = [], []
         for skill in skills:
             skill_names = [skill["name"].lower()] + [alias.lower() for alias in skill["aliases"]]
             matched = False
             for s in skill_names:
-                match = re.search(rf"\b{s}\b", resume_lower)
+                # Allow punctuation or parentheses before/after, not just spaces
+                pattern = rf"(?<!\w){re.escape(s)}(?!\w)"
+                match = re.search(pattern, resume_lower, flags=re.MULTILINE)
                 if match:
                     if verbose:
                         context = resume_text[max(0, match.start() - 50):match.end() + 50].replace("\n", " ")
@@ -70,10 +72,11 @@ class ResumeSkillExtractor:
         return found, missing
 
     def _match_simple_skills(self, skills, resume_text, resume_lower, verbose):
-        """Match simple skill strings against resume."""
+        """Match simple skill strings against resume, punctuation-safe."""
         found, missing = [], []
         for s in skills:
-            match = re.search(rf"\b{s.lower()}\b", resume_lower)
+            pattern = rf"(?<!\w){re.escape(s.lower())}(?!\w)"
+            match = re.search(pattern, resume_lower, flags=re.MULTILINE)
             if match:
                 if verbose:
                     context = resume_text[max(0, match.start() - 50):match.end() + 50].replace("\n", " ")
