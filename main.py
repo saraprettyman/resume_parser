@@ -1,86 +1,157 @@
-import os
+import json
+import csv
+from pathlib import Path
+from src.utils.extractor import ResumeSkillExtractor
 from src.utils.file_reader import read_resume
-from src.utils.extractor import (
-    extract_role_skills,
-    extract_all_technical_skills,
-    extract_certifications
-)
-from src.utils.skills_loader import load_skills
 
-def main():
-    print("====================================")
-    print("   📄 Resume Skill Analyzer CLI")
-    print("====================================\n")
+# ANSI color codes
+BOLD = "\033[1m"
+RESET = "\033[0m"
+CYAN = "\033[96m"
+GREEN = "\033[92m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
 
-    # Step 1: Ask for resume path
+def divider():
+    print(f"{YELLOW}{'-' * 60}{RESET}")
+
+def save_json(data, filename):
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    print(f"[+] Saved JSON to {filename}")
+
+def save_csv(data, filename):
+    with open(filename, "w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if "present" in data and "missing" in data:
+            writer.writerow(["Category", "Status", "Skills"])
+            for cat, skills in data["present"].items():
+                writer.writerow([cat, "Present", ", ".join(skills)])
+            for cat, skills in data["missing"].items():
+                writer.writerow([cat, "Missing", ", ".join(skills)])
+        else:
+            writer.writerow(["Category", "Skills"])
+            for category, skills in data.items():
+                writer.writerow([category, ", ".join(skills)])
+    print(f"[+] Saved CSV to {filename}")
+
+def save_markdown(data, filename, role_name=None):
+    with open(filename, "w", encoding="utf-8") as f:
+        if "present" in data and "missing" in data:
+            f.write(f"# Role-Specific Skills Report: {role_name or ''}\n\n")
+            f.write("## Present Skills\n")
+            for cat, skills in data["present"].items():
+                f.write(f"### {cat}\n")
+                f.write("\n".join(f"- {skill}" for skill in skills) if skills else "_None_")
+                f.write("\n\n")
+            f.write("## Missing Skills\n")
+            for cat, skills in data["missing"].items():
+                f.write(f"### {cat}\n")
+                f.write("\n".join(f"- {skill}" for skill in skills) if skills else "_None_")
+                f.write("\n\n")
+        else:
+            f.write("# Skills Extraction Report\n\n")
+            for category, skills in data.items():
+                f.write(f"## {category}\n")
+                f.write("\n".join(f"- {skill}" for skill in skills) if skills else "_None_")
+                f.write("\n\n")
+    print(f"[+] Saved Markdown to {filename}")
+
+def choose_output(data, role_name=None):
+    save_choice = input("Do you want to save the results? (y/n): ").strip().lower()
+    if save_choice == "y":
+        fmt = input("Choose output format (json/csv/md): ").strip().lower()
+        filename = input("Enter output file name (with extension): ").strip()
+        if fmt == "json":
+            save_json(data, filename)
+        elif fmt == "csv":
+            save_csv(data, filename)
+        elif fmt == "md":
+            save_markdown(data, filename, role_name)
+        else:
+            print("[!] Invalid format. Skipping save.")
+
+def load_roles():
+    try:
+        skills_file = Path(__file__).resolve().parent / "src" / "data" / "skills_master.json"
+        with open(skills_file, "r", encoding="utf-8") as f:
+            skills_data = json.load(f)
+        return list(skills_data.get("roles", {}).keys())
+    except Exception as e:
+        print(f"[ERROR] Could not load roles: {e}")
+        return []
+
+def interactive_cli():
+    print(f"{BOLD}{CYAN}=== Resume Skills Extraction Tool ==={RESET}")
     resume_path = input("Enter path to resume file: ").strip()
-    if not os.path.exists(resume_path):
-        print("[ERROR] File not found. Exiting.")
+    extractor = ResumeSkillExtractor()
+
+    print("\n[INFO] Reading resume...")
+    try:
+        resume_text = read_resume(resume_path)
+    except Exception as e:
+        print(f"[ERROR] Failed to read resume: {e}")
         return
 
-    resume_text = read_resume(resume_path)
+    print("\nChoose analysis mode:")
+    print("1. General Skills Review")
+    print("2. Role-Specific Skills Review")
+    choice = input("Enter choice (1/2): ").strip()
 
-    # Step 2: Load skills.json
-    skills_dict = load_skills()
+    if choice == "1":
+        results = extractor.extract_general_skills(resume_text)
+        divider()
+        print(f"{BOLD}{CYAN}GENERAL SKILLS REVIEW{RESET}")
+        divider()
+        for category, skills in results.items():
+            color = GREEN if skills else RED
+            skill_list = "\n  - ".join(skills) if skills else "None"
+            print(f"{BOLD}{CYAN}{category}:{RESET} {color}")
+            print(f"  - {skill_list}{RESET}")
+            print()
+        divider()
+        choose_output(results)
 
-    # Step 3: Choose mode
-    print("\nChoose review mode:")
-    print("1. General Review (all technical skills + certifications)")
-    print("2. Specific Role Review (role-based skills + certifications)")
-    mode_choice = input("Enter choice [1 or 2]: ").strip()
-
-    if mode_choice == "1":
-        found_skills = extract_all_technical_skills(resume_text, skills_dict)
-        found_certs = extract_certifications(resume_text, skills_dict)
-
-        print("\n📊 General Technical Skills Found:")
-        if found_skills:
-            print("  " + ", ".join(found_skills))
-        else:
-            print("  None")
-
-        print("\n🎓 Certifications Found:")
-        if found_certs:
-            print("  " + ", ".join(found_certs))
-        else:
-            print("  None")
-
-    elif mode_choice == "2":
-        roles_dict = skills_dict.get("ROLES", {})
-        roles = list(roles_dict.keys())
-
+    elif choice == "2":
+        roles = load_roles()
         if not roles:
-            print("[ERROR] No roles found in skills file.")
+            print("[ERROR] No roles found in skills_master.json")
             return
 
         print("\nAvailable roles:")
-        for idx, role in enumerate(roles, start=1):
-            print(f"  {idx}. {role}")
+        for i, role in enumerate(roles, start=1):
+            print(f"{i}. {role}")
 
-        role_choice = input("\nEnter role number: ").strip()
-        if not role_choice.isdigit() or not (1 <= int(role_choice) <= len(roles)):
-            print("[ERROR] Invalid choice. Exiting.")
+        role_choice = input("Select role by number: ").strip()
+        try:
+            role_name = roles[int(role_choice) - 1]
+        except (IndexError, ValueError):
+            print("[!] Invalid selection.")
             return
 
-        selected_role = roles[int(role_choice) - 1]
+        results = extractor.extract_role_specific(resume_text, role_name)
+        divider()
+        print(f"{BOLD}{CYAN}ROLE-SPECIFIC REVIEW: {role_name}{RESET}")
+        divider()
 
-        found_skills = extract_role_skills(resume_text, skills_dict, selected_role)
-        found_certs = extract_certifications(resume_text, skills_dict, role=selected_role)
+        print(f"\n{BOLD}{GREEN}PRESENT SKILLS:{RESET}")
+        for category, skills in results["present"].items():
+            skill_list = "\n  - ".join(skills) if skills else "None"
+            print(f"{BOLD}{CYAN}{category}:{RESET} {GREEN}")
+            print(f"  - {skill_list}{RESET}")
+            print()
 
-        print(f"\n📊 Skills Found for {selected_role}:")
-        if found_skills:
-            print("  " + ", ".join(found_skills))
-        else:
-            print("  None")
+        print(f"{BOLD}{RED}MISSING SKILLS:{RESET}")
+        for category, skills in results["missing"].items():
+            skill_list = "\n  - ".join(skills) if skills else "None"
+            print(f"{BOLD}{CYAN}{category}:{RESET} {RED}")
+            print(f"  - {skill_list}{RESET}")
+            print()
 
-        print(f"\n🎓 Certifications Found for {selected_role}:")
-        if found_certs:
-            print("  " + ", ".join(found_certs))
-        else:
-            print("  None")
-
+        divider()
+        choose_output(results, role_name)
     else:
-        print("[ERROR] Invalid mode selected.")
+        print("[!] Invalid choice.")
 
 if __name__ == "__main__":
-    main()
+    interactive_cli()

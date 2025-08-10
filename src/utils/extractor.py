@@ -1,58 +1,48 @@
+import json
 import re
+from pathlib import Path
 
-def skill_in_text(skill, text):
-    """Check if skill appears as a whole word/phrase in text."""
-    # Escape special regex chars in skill, match whole word boundaries
-    pattern = r'\b' + re.escape(skill) + r'\b'
-    return re.search(pattern, text, flags=re.IGNORECASE) is not None
+class ResumeSkillExtractor:
+    def __init__(self):
+        self.skills_master = self._load_skills_master()
 
+    def _load_skills_master(self):
+        """
+        Load skills_master.json from a fixed relative path.
+        """
+        try:
+            skills_file = Path(__file__).resolve().parent.parent / "data" / "skills_master.json"
+            if not skills_file.exists():
+                raise FileNotFoundError(f"skills_master.json not found at {skills_file}")
 
-def extract_role_skills(resume_text, skills_dict, role):
-    """Match resume text against skills for a specific role."""
-    found_skills = set()
-    roles_dict = skills_dict.get("ROLES", {})
-    role_data = roles_dict.get(role, {})
+            with open(skills_file, "r", encoding="utf-8") as f:
+                return json.load(f)
 
-    for category, skills in role_data.items():
-        # Only iterate if the category actually contains a list
-        if isinstance(skills, list):
-            for skill in skills:
-                if skill_in_text(skill, resume_text):
-                    found_skills.add(skill)
+        except Exception as e:
+            print(f"[ERROR] Failed to load skills_master.json: {e}")
+            return {"general": {}, "roles": {}}
 
-    return sorted(found_skills)
+    def extract_general_skills(self, resume_text):
+        """
+        Match skills from the 'general' section of skills_master.json against resume text.
+        """
+        found_skills = {}
+        for category, skills in self.skills_master.get("general", {}).items():
+            matched = [skill for skill in skills if re.search(rf"\b{re.escape(skill)}\b", resume_text, re.IGNORECASE)]
+            found_skills[category] = matched
+        return found_skills
 
+    def extract_role_specific(self, resume_text, role_name):
+        """
+        Match skills from a specific role in skills_master.json against resume text.
+        Returns a dict with 'present' and 'missing' skill lists.
+        """
+        role_data = self.skills_master.get("roles", {}).get(role_name, {})
+        present, missing = {}, {}
 
-def extract_all_technical_skills(resume_text, skills_dict):
-    """Match resume text against ALL_TECHNICAL_SKILLS list."""
-    found_skills = set()
-    categories = skills_dict.get("ALL_TECHNICAL_SKILLS", {})
+        for category, skills in role_data.items():
+            matched = [skill for skill in skills if re.search(rf"\b{re.escape(skill)}\b", resume_text, re.IGNORECASE)]
+            present[category] = matched
+            missing[category] = [skill for skill in skills if skill not in matched]
 
-    for category, skills in categories.items():
-        for skill in skills:
-            if skill_in_text(skill, resume_text):
-                found_skills.add(skill)
-
-    return sorted(found_skills)
-
-
-def extract_certifications(resume_text, skills_dict, role=None):
-    """Match resume text against certifications (general or role-specific)."""
-    found_certs = set()
-
-    # Role-specific certifications
-    if role:
-        roles_dict = skills_dict.get("ROLES", {})
-        role_data = roles_dict.get(role, {})
-        role_certs = role_data.get("Certifications", [])
-        for cert in role_certs:
-            if skill_in_text(cert, resume_text):
-                found_certs.add(cert)
-
-    # General certifications
-    certifications = skills_dict.get("CERTIFICATIONS", [])
-    for cert in certifications:
-        if skill_in_text(cert, resume_text):
-            found_certs.add(cert)
-
-    return sorted(found_certs)
+        return {"present": present, "missing": missing}
