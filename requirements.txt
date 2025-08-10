@@ -17,3 +17,5 @@ numpy>=1.24.3
 
 # If role-specific skill matching uses pandas later
 pandas>=2.0.3
+
+pyfiglet

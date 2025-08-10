@@ -406,105 +406,63 @@
     ]
   },
   "ROLES": {
-    "Data Engineering": {
-      "Programming Languages": ["Python", "SQL", "Java", "Scala", "R"],
-      "Big Data & Processing": [
-        "Apache Spark",
-        "Hadoop",
-        "Flink",
-        "Beam",
-        "Kafka"
-      ],
-      "Databases": ["MySQL", "PostgreSQL", "MongoDB", "Cassandra", "Redis"],
-      "Cloud & Warehousing": [
-        "Snowflake",
-        "Amazon Redshift",
-        "Google BigQuery",
-        "Azure Synapse Analytics"
-      ],
-      "ETL & Orchestration": [
-        "Apache NiFi",
-        "Airflow",
-        "Talend",
-        "Informatica",
-        "dbt"
-      ],
-      "Data Modeling": [
-        "Dimensional Modeling",
-        "Star Schema",
-        "Data Lakes",
-        "OLAP",
-        "OLTP"
-      ]
-    },
-    "Network/Cloud Architecture": {
-      "Cloud Platforms": [
-        "AWS",
-        "Azure",
-        "Google Cloud Platform",
-        "Oracle Cloud"
-      ],
-      "Networking": [
-        "TCP/IP",
-        "DNS",
-        "DHCP",
-        "VPN",
-        "MPLS",
-        "IPv4",
-        "IPv6",
-        "BGP",
-        "OSPF"
-      ],
-      "Cloud Networking": [
-        "VPC",
-        "Direct Connect",
-        "ExpressRoute",
-        "Cloud Interconnect"
-      ],
-      "Security": ["IAM", "WAF", "Firewalls", "Zero Trust", "CSPM"],
-      "Automation": [
-        "Terraform",
-        "CloudFormation",
-        "Ansible",
-        "Puppet",
-        "Chef"
-      ],
-      "Performance & Monitoring": [
-        "Load Balancers",
-        "Failover Clustering",
-        "Auto Scaling",
-        "CloudWatch",
-        "Azure Monitor",
-        "Prometheus",
-        "Grafana"
-      ]
-    },
-    "Blockchain Development": {
-      "Languages": ["Solidity", "Rust", "Go"],
-      "Platforms": [
-        "Ethereum",
-        "Binance Smart Chain",
-        "Polygon",
-        "Solana",
-        "Hyperledger"
-      ],
-      "Development Tools": [
-        "Remix IDE",
-        "Truffle",
-        "Hardhat",
-        "Web3.js",
-        "Ethers.js"
-      ],
-      "Concepts": [
-        "DeFi",
-        "NFT",
-        "IPFS",
-        "Tokenomics",
-        "Proof of Work",
-        "Proof of Stake",
-        "Smart Contract Development",
-        "Smart Contract Auditing"
-      ]
-    }
+    "Data Engineering": [
+      "Programming Languages",
+      "Databases & Big Data",
+      "Cloud & Warehousing",
+      "ETL & Orchestration",
+      "Data Modeling"
+    ],
+    "Backend Developer": [
+      "Programming Languages",
+      "Web & Mobile Development",
+      "Databases & Big Data",
+      "Cloud & DevOps",
+      "Software Practices"
+    ],
+    "Frontend Developer": [
+      "Programming Languages",
+      "Web & Mobile Development",
+      "UX/UI Design",
+      "Software Practices"
+    ],
+    "Cloud Engineer": [
+      "Programming Languages",
+      "Cloud & DevOps",
+      "Databases & Big Data",
+      "Systems & Security",
+      "Software Practices",
+      "Certifications"
+    ],
+    "AI/ML Engineer": [
+      "Programming Languages",
+      "AI/ML & Analytics",
+      "Databases & Big Data",
+      "Cloud & DevOps",
+      "Software Practices",
+      "Certifications"
+    ],
+    "Cybersecurity Specialist": [
+      "Systems & Security",
+      "Cloud & DevOps",
+      "Programming Languages",
+      "Software Practices",
+      "Certifications"
+    ],
+    "Blockchain Developer": [
+      "Programming Languages",
+      "Blockchain & Web3",
+      "Cloud & DevOps",
+      "Software Practices"
+    ],
+    "Full Stack Developer": [
+      "Programming Languages",
+      "Web & Mobile Development",
+      "Databases & Big Data",
+      "Cloud & DevOps",
+      "UX/UI Design",
+      "Software Practices"
+    ]
   }
+
 }
