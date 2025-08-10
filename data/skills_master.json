@@ -1,0 +1,64 @@
+{
+  "ALL_TECHNICAL_SKILLS": {
+    "Programming Languages": ["Python", "Java", "C", "C++", "C#", "JavaScript", "Go", "Rust", "R", "Swift", "Ruby", "PHP"],
+    "Web & Mobile Development": ["HTML5", "CSS3", "React", "Angular", "Vue.js", "Node.js", "Django", "Flask", "Express.js", "Flutter", "Swift", "Kotlin"],
+    "Cloud & DevOps": ["AWS", "Azure", "GCP", "Docker", "Kubernetes", "Terraform", "Ansible", "Jenkins", "CI/CD", "CloudFormation", "GitHub Actions"],
+    "Databases & Big Data": ["SQL", "MySQL", "PostgreSQL", "Oracle", "MongoDB", "Hadoop", "Spark", "Kafka", "ETL", "Data Warehousing"],
+    "AI/ML & Analytics": ["TensorFlow", "PyTorch", "Keras", "Scikit-learn", "XGBoost", "Deep Learning", "NLP", "Computer Vision", "Pandas", "NumPy", "Tableau", "Power BI"],
+    "Software Practices": ["Agile", "Scrum", "Kanban", "Git", "Testing", "Selenium", "CI/CD"],
+    "Systems & Security": ["Linux", "Windows", "macOS", "TCP/IP", "VPN", "Firewall", "Network Security", "Ethical Hacking"],
+    "Industry Tools": ["AutoCAD", "SAP", "Salesforce", "MATLAB", "Adobe Photoshop", "UiPath", "CMS", "WordPress"],
+    "Blockchain & Web3": ["Solidity", "Rust", "Go", "Ethereum", "Binance Smart Chain", "Polygon", "Solana", "Hyperledger", "Smart Contract Development", "Remix IDE", "Truffle", "Hardhat", "Web3.js", "Ethers.js", "DeFi", "NFT", "IPFS", "Tokenomics", "Proof of Work", "Proof of Stake", "Smart Contract Auditing"],
+    "UX/UI Design": ["Figma", "Adobe XD", "Sketch", "InVision", "Zeplin", "Axure RP", "Balsamiq", "Wireframing", "Prototyping", "User Flows", "Information Architecture", "Responsive Design", "User Interviews", "Usability Testing", "A/B Testing", "Persona Development", "Typography", "Color Theory", "Visual Hierarchy", "Interaction Design", "WCAG", "ARIA Standards", "Design Systems"],
+    "Project Management": ["Agile", "Scrum", "Kanban", "Waterfall", "SAFe", "Lean", "Prince2", "Jira", "Trello", "Asana", "Monday.com", "airfocus", "Microsoft Project", "ClickUp", "Confluence", "Roadmap Planning", "Resource Allocation", "Risk Management", "Stakeholder Communication", "Requirements Gathering", "Change Management", "PMP", "CAPM", "CSM", "SAFe Agilist", "Burndown Charts", "KPIs", "OKRs", "Status Reports"]
+  },
+
+  "ROLES": {
+    "Data Engineering": {
+      "Programming Languages": ["Python", "SQL", "Java", "Scala", "R"],
+      "Big Data & Processing": ["Apache Spark", "Hadoop", "Flink", "Beam", "Kafka"],
+      "Databases": ["MySQL", "PostgreSQL", "MongoDB", "Cassandra", "Redis"],
+      "Cloud & Warehousing": ["Snowflake", "Amazon Redshift", "Google BigQuery", "Azure Synapse Analytics"],
+      "ETL & Orchestration": ["Apache NiFi", "Airflow", "Talend", "Informatica", "dbt"],
+      "Data Modeling": ["Dimensional Modeling", "Star Schema", "Data Lakes", "OLAP", "OLTP"],
+      "Cloud Data Services": ["AWS Glue", "AWS Kinesis", "Google Dataflow", "Azure Data Factory"]
+    },
+    "Network/Cloud Architecture": {
+      "Cloud Platforms": ["AWS", "Azure", "Google Cloud Platform", "Oracle Cloud"],
+      "Networking": ["TCP/IP", "DNS", "DHCP", "VPN", "MPLS", "IPv4", "IPv6", "BGP", "OSPF"],
+      "Cloud Networking": ["VPC", "Direct Connect", "ExpressRoute", "Cloud Interconnect"],
+      "Security": ["IAM", "WAF", "Firewalls", "Zero Trust", "Cloud Security Posture Management"],
+      "Automation": ["Terraform", "CloudFormation", "Ansible", "Puppet", "Chef"],
+      "Performance & Monitoring": ["Load Balancers", "Failover Clustering", "Auto Scaling", "CloudWatch", "Azure Monitor", "Prometheus", "Grafana"]
+    },
+    "Systems Engineering": {
+      "Operating Systems": ["Linux", "Windows Server", "Unix", "macOS"],
+      "Scripting": ["Bash", "PowerShell", "Python", "Perl"],
+      "Virtualization & Cloud": ["VMware", "Hyper-V", "OpenStack"],
+      "Monitoring & Logging": ["Nagios", "Zabbix", "Splunk", "Datadog"],
+      "Backup & Recovery": ["Veeam", "Acronis", "Commvault"],
+      "Security Standards": ["ISO 27001", "NIST", "SOC 2", "CIS Benchmarks"],
+      "Automation": ["Puppet", "Chef", "Ansible", "SaltStack"]
+    },
+    "UX/UI Design": {
+      "Design Tools": ["Figma", "Adobe XD", "Sketch", "InVision", "Zeplin", "Axure RP", "Balsamiq"],
+      "Design Processes": ["Wireframing", "Prototyping", "User Flows", "Information Architecture", "Responsive Design"],
+      "User Research": ["User Interviews", "Usability Testing", "A/B Testing", "Persona Development"],
+      "Visual Design": ["Typography", "Color Theory", "Visual Hierarchy", "Interaction Design"],
+      "Accessibility": ["WCAG", "ARIA Standards", "Design Systems"]
+    },
+    "Project Management": {
+      "Methodologies": ["Agile", "Scrum", "Kanban", "Waterfall", "SAFe", "Lean", "Prince2"],
+      "Tools": ["Jira", "Trello", "Asana", "Monday.com", "airfocus", "Microsoft Project", "ClickUp", "Confluence"],
+      "Responsibilities": ["Roadmap Planning", "Resource Allocation", "Risk Management", "Stakeholder Communication", "Requirements Gathering", "Change Management"],
+      "Certifications": ["PMP", "CAPM", "CSM", "SAFe Agilist"],
+      "Reporting": ["Burndown Charts", "KPIs", "OKRs", "Status Reports"]
+    },
+    "Blockchain Development": {
+      "Languages": ["Solidity", "Rust", "Go"],
+      "Platforms": ["Ethereum", "Binance Smart Chain", "Polygon", "Solana", "Hyperledger"],
+      "Development Tools": ["Remix IDE", "Truffle", "Hardhat", "Web3.js", "Ethers.js"],
+      "Concepts": ["DeFi", "NFT", "IPFS", "Tokenomics", "Proof of Work", "Proof of Stake", "Smart Contract Development", "Smart Contract Auditing"]
+    }
+  }
+}
