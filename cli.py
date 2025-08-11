@@ -39,7 +39,7 @@ def print_section_title(title):
 def interactive_cli():
     console.clear()
     fig = Figlet(font="standard")
-    console.print(Align.center(fig.renderText("Resume Parser Tool")), style="bold green")
+    console.print(Align.center(fig.renderText("Resume Lens")), style="bold green")
     console.print("\n")
 
     file_path = prompt("Enter path to resume file", "real_resume_example.pdf")
@@ -84,7 +84,7 @@ def interactive_cli():
         edu_res = edu_ex.extract(file_path)
         exp_res = exp_ex.extract(file_path)
 
-        display.display_education(edu_res, show_gpa=True, show_degree=True)
+        display.display_education(edu_res, show_gpa=True)
         display.display_experience(exp_res)
 
     elif mode_choice in ["s", "skills"]:
@@ -107,6 +107,9 @@ def interactive_cli():
                 console.print(f"[cyan]{i}[/cyan]. {role}")
 
             role_idx_str = prompt("Select role by number")
+            if role_idx_str is None:
+                console.print("[red]No role selected[/red]")
+                return
             try:
                 role_idx = int(role_idx_str)
                 role_name = roles[role_idx - 1]
@@ -116,8 +119,8 @@ def interactive_cli():
 
             console.print("\n")
             print_section_title(f"Role-Specific Skills Review: {role_name}")
-            extracted, score = skills_checker.extract_role_skills(file_path, role_name)
-            display.display_skills_table(extracted, score=score)
+            extracted = skills_checker.extract_role_skills(file_path, role_name)
+            display.display_skills_table(extracted)
 
     else:
         console.print("[red]Invalid analysis mode[/red]")

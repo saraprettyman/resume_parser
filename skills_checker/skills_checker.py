@@ -36,8 +36,7 @@ class SkillsChecker:
             matched_skills += len(found)
             extracted[category] = {"found": found, "missing": missing}
 
-        score = round((matched_skills / total_skills) * 100, 2) if total_skills else 0
-        return extracted, score
+        return extracted
 
     def _match_skills(self, skills, resume_lower, resume_text):
         found, missing = [], []
