@@ -1,4 +1,7 @@
 venv/
-src/__pycache__
-src/utils/__pycache__
+
+__pycache__/
+*.py[cod]
+*$py.class
+
 real_resume_example.pdf

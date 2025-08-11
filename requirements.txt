@@ -1,23 +1,24 @@
-# CLI and UI
-rich>=13.5.2
+# Rich terminal formatting
+rich>=13.0.0
+
+# ASCII art banners
 pyfiglet>=0.8.post1
 
-# PDF text extraction
-PyMuPDF>=1.23.3
-pdfplumber>=0.9.0
+# PDF parsing
+pdfplumber>=0.10.0
 
-# Resume file reading (various formats)
-python-docx>=0.8.11
+# Word document parsing
+python-docx>=1.1.0
 mammoth>=1.6.0
-pypandoc>=1.11
-pdf2image>=1.16.3
+
+# Document conversion
+pypandoc>=1.13
+
+# PDF to image conversion
+pdf2image>=1.17.0
+
+# OCR
 pytesseract>=0.3.10
 
-# Data handling
-numpy>=1.24.3
-pandas>=2.0.3  # For role-specific skill matching and data frames
-
-# Phone number parsing
-phonenumbers>=8.13.0
-
-spacy
+# Natural Language Processing
+spacy>=3.7.0
