@@ -12,7 +12,8 @@ from src.utils.skills_loader import load_roles
 
 console = Console()
 
-SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt", ".rtf"}
+SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt", ".rtf", ".odt", ".md", ".html", ".htm"}
+
 
 def prompt(question, default=None):
     """Stylized inline prompt with default option."""
@@ -21,6 +22,7 @@ def prompt(question, default=None):
         q_text.append(f" ({default})", style="dim")
     console.print(q_text, end=" ")
     return input().strip() or default
+
 
 def print_section_title(title):
     """Centered, bold section title inside a panel."""
@@ -32,16 +34,17 @@ def print_section_title(title):
     )
     console.print(panel)
 
+
 def interactive_cli():
     console.clear()
 
     # Figlet banner
     fig = Figlet(font="standard")
-    console.print(Align.center(fig.renderText("Resume Parser Tool")), style="bold green")
+    console.print(Align.center(fig.renderText("Resume Parser")), style="bold green")
     console.print("\n")
 
     # File path prompt
-    file_path = prompt("Enter path to resume file", "tests/real_resume.pdf")
+    file_path = prompt("Enter path to resume file", "real_resume_example.pdf")
     console.print("\n")
 
     # --- Early Validation ---
@@ -59,7 +62,7 @@ def interactive_cli():
         return
     # ------------------------
 
-    # Mode selection (single letter)
+    # Mode selection
     mode_choice = prompt("Choose analysis mode [r: profile/readability, s: skills]", "s").lower()
 
     extractor_skills = ResumeSkillExtractor()
@@ -76,11 +79,16 @@ def interactive_cli():
         console.print("\n")
         print_section_title("Education & Work Experience Check")
         edu_work_results = extractor_edu_work.extract_edu_exp(file_path)
-        extractor_edu_work.display_edu_exp_table(edu_work_results)
+
+        # Pass new GPA and education type fields to the display
+        extractor_edu_work.display_edu_exp_table(
+            edu_work_results,
+            show_gpa=True,
+            show_edu_type=True
+        )
 
     elif mode_choice in ["s", "skills"]:
         sub_mode = prompt("Choose skills analysis mode [g: general, r: role]", "g").lower()
-
         console.print("\n")
 
         if sub_mode in ["g", "general"]:
@@ -105,7 +113,7 @@ def interactive_cli():
             except (ValueError, IndexError):
                 console.print("[red]Invalid role selection[/red]")
                 return
-            
+
             console.print("\n")
             print_section_title(f"Role-Specific Skills Review: {role_name}")
             extracted, score = extractor_skills.extract_role_skills(file_path, role_name)
@@ -115,6 +123,7 @@ def interactive_cli():
 
     else:
         console.print("[red]Invalid analysis mode[/red]")
+
 
 if __name__ == "__main__":
     interactive_cli()

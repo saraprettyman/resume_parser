@@ -19,3 +19,5 @@ pandas>=2.0.3  # For role-specific skill matching and data frames
 
 # Phone number parsing
 phonenumbers>=8.13.0
+
+spacy

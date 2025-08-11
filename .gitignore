@@ -1,4 +1,4 @@
 venv/
 src/__pycache__
 src/utils/__pycache__
-tests/real_resume.pdf
+real_resume_example.pdf

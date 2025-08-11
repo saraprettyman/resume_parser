@@ -47,7 +47,12 @@ def read_doc(file_path):
 
 def read_with_pandoc(file_path):
     """Use Pandoc to read RTF, ODT, MD, HTML and convert to plain text."""
-    return pypandoc.convert_file(file_path, "plain").strip()
+    try:
+        return pypandoc.convert_file(file_path, "plain").strip()
+    except (OSError, RuntimeError):
+        # Fallback for environments without pandoc
+        with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+            return f.read().strip()
 
 
 def read_txt(file_path):
