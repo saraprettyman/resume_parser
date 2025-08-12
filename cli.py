@@ -8,8 +8,6 @@ from pathlib import Path
 
 from extractors.summary_extractor import SummaryExtractor
 from extractors.contact_extractor import ContactExtractor
-from extractors.skills_extractor import SkillsExtractor
-from extractors.certifications_extractor import CertificationsExtractor
 from extractors.experience_extractor import ExperienceExtractor
 from extractors.education_extractor import EducationExtractor
 from skills_checker.skills_checker import SkillsChecker
@@ -88,8 +86,6 @@ def interactive_cli():
     # Instantiate extractors/checkers
     summary_ex = SummaryExtractor()
     contact_ex = ContactExtractor()
-    skills_ex = SkillsExtractor()
-    cert_ex = CertificationsExtractor()
     exp_ex = ExperienceExtractor()
     edu_ex = EducationExtractor()
     skills_checker = SkillsChecker()
@@ -97,6 +93,7 @@ def interactive_cli():
     console.print("\n")
 
     if mode_choice in ["r", "readability", "profile"]:
+        console.clear()
         print_section_title("ATS Profile Check")
         summary_res = summary_ex.extract(file_path)
         display.display_section_text("Professional Summary", summary_res.get("section", ""))
@@ -111,6 +108,8 @@ def interactive_cli():
 
         display.display_education(edu_res, show_gpa=True)
         display.display_experience(exp_res)
+
+        # TODO: add a project section
 
     elif mode_choice in ["s", "skills"]:
         sub_mode = prompt("Choose skills analysis mode [g: general, r: role]", "g").lower()

@@ -71,7 +71,15 @@ class Display:
     def display_experience(self, exp_res: dict):
         items = exp_res.get("items", []) if isinstance(exp_res, dict) else (exp_res or [])
         if not items:
-            panel = Panel(Align.left(exp_res.get("section", "[dim]No experience found[/dim]") if isinstance(exp_res, dict) else "[dim]No experience found[/dim]"), title="Experience", expand=True)
+            panel = Panel(
+                Align.left(
+                    exp_res.get("section", "[dim]No experience found[/dim]")
+                    if isinstance(exp_res, dict)
+                    else "[dim]No experience found[/dim]"
+                ),
+                title="Experience",
+                expand=True
+            )
             console.print(panel)
             return
 
@@ -83,23 +91,35 @@ class Display:
         table.add_column("Details", style="white")
 
         for it in items:
-            details = ""
-            if isinstance(it, dict):
-                if it.get("Bullets"):
-                    details = "\n".join(f"• {b}" for b in it.get("Bullets", []))
-                else:
-                    details = it.get("Details", "")
+            if not isinstance(it, dict):
+                continue  # skip invalid entries
+
+            # Merge bullets into details safely
+            bullets = it.get("Bullets", [])
+            if bullets:
+                details = "\n".join(
+                    b if b.strip().startswith("•") else f"• {b}"
+                    for b in bullets
+                )
             else:
-                details = str(it)
-            table.add_row(it.get("Job Title", "") if isinstance(it, dict) else "", it.get("Company", "") if isinstance(it, dict) else "", it.get("Start Date", "") if isinstance(it, dict) else "", it.get("End Date", "") if isinstance(it, dict) else "", details)
+                details = it.get("Details", "")
+
+            table.add_row(
+                it.get("Job Title", ""),
+                it.get("Company", ""),
+                it.get("Start Date", ""),
+                it.get("End Date", ""),
+                details
+            )
+
         console.print(table)
 
     def display_education(self, education_res, show_gpa=True):
         """
         Accepts either:
-          - a dict like {"section": "...", "items": [ {...}, ... ] }
-          - or a plain list [ {...}, ... ]
-        Displays a table with Institution | Location, Graduation Date, Degree & Emphasis, GPA, Minors, Projects, Scholarships / Awards.
+        - a dict like {"section": "...", "items": [ {...}, ... ] }
+        - or a plain list [ {...}, ... ]
+        Displays a table with Institution | Location, Graduation Date, Degree & Emphasis, GPA, Minors, Details.
         Missing fields are left blank (no placeholder).
         """
 
@@ -128,8 +148,7 @@ class Display:
         if show_gpa:
             table.add_column("GPA", style="blue", justify="center", no_wrap=True)
         table.add_column("Minors", style="white")
-        table.add_column("Projects", style="white")
-        table.add_column("Scholarships / Awards", style="white")
+        table.add_column("Details", style="white")
 
         def safe_get(entry, key):
             # Return a plain string (empty if missing). Accept dicts or other types gracefully.
@@ -158,11 +177,9 @@ class Display:
                     row.append(safe_get(edu, "GPA"))
                 row.extend([
                     safe_get(edu, "Minors"),
-                    safe_get(edu, "Projects"),
-                    safe_get(edu, "Scholarships / Awards"),
+                    safe_get(edu, "Details"),
                 ])
 
-                # Ensure row length matches columns
                 table.add_row(*row)
             except Exception:
                 # defensive: if anything goes wrong for a row, print the raw section instead of failing
