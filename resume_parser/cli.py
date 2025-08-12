@@ -10,7 +10,7 @@ from extractors.summary_extractor import SummaryExtractor
 from extractors.contact_extractor import ContactExtractor
 from extractors.experience_extractor import ExperienceExtractor
 from extractors.education_extractor import EducationExtractor
-from skills_checker.skills_checker import SkillsChecker
+from utils.skills_checker import SkillsChecker
 from utils.display import Display
 
 console = Console()

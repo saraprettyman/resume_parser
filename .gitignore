@@ -1,7 +1,21 @@
-venv/
-
+# Byte-compiled / cache files
 __pycache__/
 *.py[cod]
-*$py.class
+*.log
 
-real_resume_example.pdf
+# Environments
+.env
+.venv/
+env/
+venv/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
