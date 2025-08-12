@@ -3,7 +3,7 @@ import re
 from .base_extractor import BaseExtractor
 from utils.file_reader import read_resume
 from utils.section_finder import find_section
-from config.patterns import EXP_START, EXP_END, DATE_RANGE
+from config.patterns import EXP_START, EXP_END  # keep in case other parts need them
 
 
 class ExperienceExtractor(BaseExtractor):
@@ -40,18 +40,29 @@ class ExperienceExtractor(BaseExtractor):
         content = re.sub(r"[–—]", "-", content)
         content = re.sub(r"\n{3,}", "\n\n", content)
 
-        # Date regex compiled with DOTALL for multi-line matches
-        date_re = re.compile(DATE_RANGE, flags=re.IGNORECASE | re.DOTALL)
+        # Build date regex (no inline flags here)
+        month_names = (
+            r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|"
+            r"Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+        )
+        # simple year or month-year token
+        date_pattern = rf"\b(?:{month_names})(?:\s+\d{{4}})?\b|\b\d{{4}}\b"
+        date_range_pattern = rf"({date_pattern})\s*(?:-|to|–)\s*(Present|{date_pattern})"
+
+        # compile with flags (no inline flags embedded into pattern text)
+        date_re = re.compile(date_range_pattern, flags=re.IGNORECASE | re.DOTALL)
+
         matches = list(date_re.finditer(content))
 
         # If no date matches found → fallback
         if not matches:
             return self._parse_by_paragraphs(content)
 
-        # Merge fragmented date matches
+        # Merge fragmented date matches (keeps adjacent date tokens together)
         merged_dates = []
         cur_start, cur_end = matches[0].start(), matches[0].end()
         for m in matches[1:]:
+            # if only separators between matches, treat as one span (e.g., "Dec 2020 - Jan 2021")
             if re.fullmatch(r"[\s\-\–\—,\.]*", content[cur_end:m.start()]):
                 cur_end = m.end()
             else:
@@ -61,13 +72,26 @@ class ExperienceExtractor(BaseExtractor):
 
         # Patterns for identifying company names & job titles
         company_kw_regex = re.compile(
-            r"\b(Inc|LLC|Corp|Company|Co\.|Ltd|LLP|GmbH|Software|Solutions|Systems|Labs|Group|Technologies|University|Institute|School|Remote|Health|Fitness)\b",
-            re.IGNORECASE
+            r"\b(Inc|LLC|Corp|Company|Co\.|Ltd|LLP|GmbH|Software|Solutions|Systems|Labs|Group|Technologies|University|Institute|School|Health|Services|Consulting)\b",
+            re.IGNORECASE,
         )
-        location_regex = re.compile(r"[A-Za-z .]+,\s*[A-Za-z]{2,}", re.IGNORECASE)
+
+        # line-level location detection (anchored full-line)
+        location_regex = re.compile(
+            r"^(?:[A-Za-z][A-Za-z .'\-]+,\s*(?:[A-Z]{2}|\d{4,5}|[A-Za-z][A-Za-z .'\-]+))$"
+            r"|^(?:Remote|Hybrid|On[- ]?site|WFH|Work\s*From\s*Home)$",
+            re.IGNORECASE,
+        )
+
+        # location inside a line (not necessarily whole-line) — used to strip 'Remote' from company lines
+        locate_in_line_re = re.compile(
+            r"(?:Remote|Hybrid|On[- ]?site|WFH|Work\s*From\s*Home|[A-Za-z][A-Za-z .'\-]+,\s*(?:[A-Z]{2}|\d{4,5}|[A-Za-z][A-Za-z .'\-]+))",
+            re.IGNORECASE,
+        )
+
         title_kw_regex = re.compile(
-            r"\b(Engineer|Developer|Manager|Director|Lead|Specialist|Analyst|Consultant|Tester|QA|SQA|Quality|Product|Architect|Coordinator|Administrator)\b",
-            re.IGNORECASE
+            r"\b(Engineer|Developer|Manager|Director|Lead|Specialist|Analyst|Consultant|Tester|QA|SQA|Quality|Product|Architect|Coordinator|Administrator|Scientist|Technician)\b",
+            re.IGNORECASE,
         )
 
         items = []
@@ -87,29 +111,60 @@ class ExperienceExtractor(BaseExtractor):
             post_lines = [ln.strip() for ln in re.split(r"\n+", details_text) if ln.strip()]
             candidates = (pre_lines[-2:] if pre_lines else []) + (post_lines[:2] if post_lines else [])
 
-            # Identify company
-            company = next((ln for ln in candidates if company_kw_regex.search(ln) or location_regex.search(ln)), "")
-            if not company and post_lines and post_lines[0] != company:
+            # Identify company (prefer lines with company keywords)
+            company = ""
+            # prefer company pattern in candidates
+            for ln in candidates:
+                if company_kw_regex.search(ln):
+                    company = ln
+                    break
+            # if still empty, prefer a candidate that looks like a location line (often company + location)
+            if not company:
+                for ln in candidates:
+                    if location_regex.search(ln):
+                        company = ln
+                        break
+            # final fallback
+            if not company and post_lines:
                 company = post_lines[0]
 
-            # Identify job title
+            # If company contains an inline location token like "Lucid Software Remote",
+            # move that portion into location and clean company string.
+            location = ""
+            if company:
+                loc_in_company = locate_in_line_re.search(company)
+                if loc_in_company:
+                    location = loc_in_company.group(0).strip()
+                    company = company.replace(loc_in_company.group(0), "").strip(" ,;:-")
+            # If we didn't get location from company line, try scanning first few lines for an anchored location
+            if not location:
+                for ln in (pre_lines + post_lines)[:4]:
+                    if location_regex.search(ln):
+                        location = ln.strip()
+                        break
+
+            # Identify job title (prefer the last pre-line if it is not the company)
             job_title = ""
             if pre_lines:
                 candidate = pre_lines[-1]
-                if candidate != company:
+                if candidate and candidate != company:
                     job_title = candidate
                 elif len(pre_lines) > 1:
                     job_title = pre_lines[-2]
+
+            # fallback: find a candidate that looks like a title by keyword
             if not job_title:
                 job_title = next((ln for ln in candidates if title_kw_regex.search(ln)), "")
 
-            # Clean details & extract bullets
+            # Clean details & extract bullets using your helper (passes compiled date_re & location_regex)
             detail_lines, bullets = self._extract_details(details_text, date_re, job_title, company, location_regex)
+
             free_text = "\n".join(detail_lines).strip()
 
             items.append({
                 "Job Title": job_title,
                 "Company": company,
+                "Location": location,
                 "Start Date": start_date,
                 "End Date": end_date,
                 "Details": free_text,
@@ -123,7 +178,7 @@ class ExperienceExtractor(BaseExtractor):
         if "-" in date_str:
             parts = [p.strip() for p in date_str.split("-", 1)]
             return parts[0], parts[1]
-        return date_str, ""
+        return date_str.strip(), ""
 
     def _extract_details(self, details_region, date_re, job_title, company, location_regex):
         """Cleans detail lines and separates bullets."""
@@ -132,12 +187,14 @@ class ExperienceExtractor(BaseExtractor):
             ln = ln.strip()
             if not ln or date_re.search(ln) or ln in (job_title, company):
                 continue
+            # skip pure location-only lines
             if location_regex.fullmatch(ln):
                 continue
             detail_lines.append(ln)
 
         bullets, free_lines = [], []
         for ln in detail_lines:
+            # extract bullet prefix and text
             m = re.match(r"^[\u2022\-\*\•\s]{0,4}(.*)$", ln)
             if m and (ln.startswith(("•", "-", "*")) or ln.strip().startswith("•")):
                 if (b := m.group(1).strip()):
@@ -145,6 +202,7 @@ class ExperienceExtractor(BaseExtractor):
             elif "•" in ln:
                 bullets.extend([p.strip() for p in ln.split("•") if p.strip()])
             else:
+                # treat non-bullet lines as free lines (paragraphs / continuation)
                 free_lines.append(ln)
 
         return free_lines, bullets
@@ -156,8 +214,17 @@ class ExperienceExtractor(BaseExtractor):
 
         for block in paragraphs:
             block = re.sub(r"\n+", " ", block)  # join wrapped lines
-            date_match = re.search(DATE_RANGE, block, flags=re.IGNORECASE)
-            start_date, end_date = self._split_date(re.sub(r"[–—]", "-", date_match.group(0).strip())) if date_match else ("", "")
+            # Try to find date(s) inside the block using same date logic
+            # for backward compatibility, we use a loose DATE_RANGE look (if you have one in config)
+            date_match = re.search(r"\b(?:Jan(?:uary)?|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b.*?\d{4}|\b\d{4}\b", block, flags=re.IGNORECASE)
+            start_date, end_date = ("", "")
+            if date_match:
+                # attempt to split if there's a range inside the match
+                dt = re.sub(r"[–—]", "-", date_match.group(0))
+                if "-" in dt:
+                    start_date, end_date = [p.strip() for p in dt.split("-", 1)]
+                else:
+                    start_date = dt.strip()
 
             lines = [ln.strip() for ln in block.splitlines() if ln.strip()]
             if not lines:
@@ -175,7 +242,7 @@ class ExperienceExtractor(BaseExtractor):
 
             bullets, free_lines = [], []
             for ln in detail_lines:
-                if re.search(DATE_RANGE, ln):
+                if re.search(r"\d{4}", ln):
                     continue
                 m = re.match(r"^[\u2022\-\*\•\s]{0,4}(.*)$", ln)
                 if m and m.group(1).strip():
@@ -193,3 +260,4 @@ class ExperienceExtractor(BaseExtractor):
             })
 
         return items
+

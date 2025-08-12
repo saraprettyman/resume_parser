@@ -26,6 +26,33 @@ _GPA_RE = re.compile(
     re.IGNORECASE,
 )
 
+# Blocklist terms that strongly indicate the candidate text is a degree/major, not a location.
+_DEGREE_TERM_BLOCKLIST = {
+    "science",
+    "mathematics",
+    "statistics",
+    "computer",
+    "data",
+    "applied",
+    "engineering",
+    "arts",
+    "business",
+    "information",
+    "systems",
+    "intelligence",
+    "analytics",
+}
+
+# Location regex: matches City, ST  OR City, Country (anchored to EOL).
+# Also matches Remote/Hybrid/Onsite/Work From Home variants.
+_LOCATION_RE = re.compile(
+    r"\b("
+    r"(?:[A-Za-z][A-Za-z .'\-]+,\s*(?:[A-Z]{2}|[A-Za-z][A-Za-z .'\-]+))"  # City, ST  or City, Country
+    r"|(?:Remote|Hybrid|On[- ]?site|WFH|Work\s*From\s*Home)"               # Remote/Hybrid/Onsite
+    r")\s*$",
+    re.IGNORECASE,
+)
+
 
 class EducationExtractor(BaseExtractor):
     def extract(self, file_path: str) -> dict:
@@ -37,6 +64,31 @@ class EducationExtractor(BaseExtractor):
         section = find_section(text, EDU_START, EDU_END) or ""
         items = self.parse_education(section)
         return {"section": section, "items": items}
+
+    def _sanitize_location_candidate(self, cand: str) -> str | None:
+        """
+        Try to repair a location candidate that contains degree words.
+        - If candidate looks like 'Statistics Logan, Utah', we convert -> 'Logan, Utah'.
+        - If candidate still looks like degree text (e.g. 'Anticipatory Intelligence, Data Science'), return None.
+        """
+        if not cand:
+            return None
+        lc = cand.lower()
+        # If candidate contains obvious degree words, try salvage
+        if any(term in lc for term in _DEGREE_TERM_BLOCKLIST):
+            parts = [p.strip() for p in cand.split(",")]
+            if len(parts) >= 2:
+                last_part = parts[-1]  # e.g. 'Utah'
+                pre = " ".join(parts[:-1]).strip()  # e.g. 'Statistics Logan' or 'Computational and Applied Mathematics'
+                if pre:
+                    last_word = pre.split()[-1]  # e.g. 'Logan'
+                    # simple validation of token
+                    if re.match(r"^[A-Za-z][A-Za-z'\-]+$", last_word):
+                        new_cand = f"{last_word}, {last_part}"
+                        if not any(term in new_cand.lower() for term in _DEGREE_TERM_BLOCKLIST):
+                            return new_cand
+            return None
+        return cand.strip()
 
     def parse_education(self, section: str):
         items = []
@@ -51,17 +103,35 @@ class EducationExtractor(BaseExtractor):
             if not lines:
                 return items
 
-            # Graduation Date
+            # Graduation Date (uses your DATE_RANGE pattern from config)
             grad_match = re.search(DATE_RANGE, text, re.IGNORECASE)
             grad_date = grad_match.group(0).strip() if grad_match else ""
 
-            # Location detection early
+            # 1) Location detection pass: scan first few lines for anchored location candidates
             location = ""
-            for ln in lines[:2]:
-                loc_match = re.search(r"([A-Za-z][A-Za-z .'-]+,\s*[A-Za-z][A-Za-z .'-]+)$", ln)
+            for ln in lines[:3]:
+                loc_match = _LOCATION_RE.search(ln)
                 if loc_match:
-                    location = loc_match.group(1).strip()
-                    break
+                    raw_cand = loc_match.group(1).strip()
+                    cand = self._sanitize_location_candidate(raw_cand)
+                    if cand:
+                        location = cand
+                        break
+
+            # 2) If still not found, try specifically on the degree line (sometimes location sits at end of degree line)
+            if not location:
+                degree_line_candidate = None
+                for ln in lines:
+                    if _DEGREE_KEYWORD_RE.search(ln):
+                        degree_line_candidate = ln
+                        break
+                if degree_line_candidate:
+                    loc_match = _LOCATION_RE.search(degree_line_candidate)
+                    if loc_match:
+                        raw_cand = loc_match.group(1).strip()
+                        cand = self._sanitize_location_candidate(raw_cand)
+                        if cand:
+                            location = cand
 
             # Institution: first line that’s not GPA, not projects, not minors
             institution_line = ""
@@ -74,17 +144,23 @@ class EducationExtractor(BaseExtractor):
             if grad_date and grad_date in institution_line:
                 institution_line = institution_line.replace(grad_date, "").strip(",;- ")
 
+            # If institution_line contains the location (same-line format), remove it
+            if location and location in institution_line:
+                institution_line = institution_line.replace(location, "").strip(" ,;:-")
+
             institution = institution_line
 
-            # Degree line
+            # Degree & Emphasis
             degree_idx = None
             for i, ln in enumerate(lines):
                 if _DEGREE_KEYWORD_RE.search(ln):
                     degree_idx = i
                     break
             degree_line = lines[degree_idx] if degree_idx is not None else (lines[1] if len(lines) > 1 else lines[0])
-            if location and degree_line.endswith(location):
-                degree_line = degree_line[: -len(location)].strip(",;:- ")
+
+            # Remove location from degree_line if it's trailing there
+            if location and location in degree_line:
+                degree_line = degree_line.replace(location, "").strip(",;:- ")
 
             degree_match = re.search(
                 r"(?P<degree>(?:Bachelor(?:'s)?[^:,\n]*|Master(?:'s)?[^:,\n]*|Associate(?:'s)?[^:,\n]*|Doctor(?:ate)?[^:,\n]*|B\.S\.[^:,\n]*|M\.S\.[^:,\n]*|Ph\.?D[^:,\n]*))",
