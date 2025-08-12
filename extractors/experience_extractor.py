@@ -7,257 +7,160 @@ from config.patterns import EXP_START, EXP_END  # keep in case other parts need 
 
 
 class ExperienceExtractor(BaseExtractor):
-    """
-    Extracts structured experience information from a resume file.
-    Uses date patterns as anchors, falls back to paragraph-based parsing if dates are not detected.
-    """
-
     def extract(self, file_path: str) -> dict:
-        # Read & normalize resume text
-        raw_text = read_resume(file_path) or ""
-        normalized_text = self.normalize(raw_text)
+        text = self.normalize(read_resume(file_path))
+        section_text = find_section(
+            text,
+            ["experience", "work history", "employment"],
+            ["projects", "education", "skills"]
+        )
 
-        # Locate the 'Experience' section
-        section = find_section(normalized_text, EXP_START, EXP_END)
-        section = str(section or "").strip()
+        if not section_text:
+            return {"section": "", "items": []}
 
-        # Parse experiences from section
-        items = self.parse_experience(section)
+        entry_pattern = re.compile(
+            r"^"  # anchor at start of line for repeated matches
+            r"(?P<title>[^\n]+?)\s+"  # Job title (greedy-ish, stops at date)
+            r"(?P<start>[A-Za-z]{3,9}\s+\d{4})\s*[-–]\s*"
+            r"(?P<end>(?:[A-Za-z]{3,9}\s+\d{4}|Present))\s*\n"
+            r"(?P<company>[^\n]+)"  # Company line
+            r"(?:\s+(?P<location>[^\n]+))?"  # Optional location
+            # details: stop when a new header is detected (either "Title Month YYYY - Month YYYY" or "Month YYYY - Month YYYY")
+            r"(?:\n(?P<details>(?:(?!^(?:[^\n]+?\s+(?:[A-Za-z]{3,9}\s+\d{4})\s*[-–]\s*(?:[A-Za-z]{3,9}\s+\d{4}|Present)|(?:[A-Za-z]{3,9}\s+\d{4})\s*[-–]\s*(?:[A-Za-z]{3,9}\s+\d{4}|Present))).*(?:\n|$))*))?",
+            re.MULTILINE
+        )
 
-        # Return structured output
-        return {
-            "section": section,
-            "items": items
-        }
-
-    def parse_experience(self, content: str):
-        """Parses experience section into structured entries."""
-        if not content:
-            return []
-
-        # Normalize whitespace & dashes
-        content = content.replace("\r\n", "\n").replace("\r", "\n")
-        content = re.sub(r"[–—]", "-", content)
-        content = re.sub(r"\n{3,}", "\n\n", content)
-
-        # Build date regex (no inline flags here)
+        # date and location regexes for detail filtering (kept similar to your other flow)
         month_names = (
             r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|"
             r"Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
         )
-        # simple year or month-year token
-        date_pattern = rf"\b(?:{month_names})(?:\s+\d{{4}})?\b|\b\d{{4}}\b"
-        date_range_pattern = rf"({date_pattern})\s*(?:-|to|–)\s*(Present|{date_pattern})"
+        date_token = rf"(?:{month_names}\s+\d{{4}}|\d{{4}})"
+        date_range_pattern = rf"({date_token})\s*(?:-|–|to|—)\s*(Present|present|{date_token})"
+        date_re = re.compile(date_range_pattern, flags=re.IGNORECASE)
 
-        # compile with flags (no inline flags embedded into pattern text)
-        date_re = re.compile(date_range_pattern, flags=re.IGNORECASE | re.DOTALL)
-
-        matches = list(date_re.finditer(content))
-
-        # If no date matches found → fallback
-        if not matches:
-            return self._parse_by_paragraphs(content)
-
-        # Merge fragmented date matches (keeps adjacent date tokens together)
-        merged_dates = []
-        cur_start, cur_end = matches[0].start(), matches[0].end()
-        for m in matches[1:]:
-            # if only separators between matches, treat as one span (e.g., "Dec 2020 - Jan 2021")
-            if re.fullmatch(r"[\s\-\–\—,\.]*", content[cur_end:m.start()]):
-                cur_end = m.end()
-            else:
-                merged_dates.append((cur_start, cur_end))
-                cur_start, cur_end = m.start(), m.end()
-        merged_dates.append((cur_start, cur_end))
-
-        # Patterns for identifying company names & job titles
-        company_kw_regex = re.compile(
-            r"\b(Inc|LLC|Corp|Company|Co\.|Ltd|LLP|GmbH|Software|Solutions|Systems|Labs|Group|Technologies|University|Institute|School|Health|Services|Consulting)\b",
-            re.IGNORECASE,
-        )
-
-        # line-level location detection (anchored full-line)
         location_regex = re.compile(
             r"^(?:[A-Za-z][A-Za-z .'\-]+,\s*(?:[A-Z]{2}|\d{4,5}|[A-Za-z][A-Za-z .'\-]+))$"
             r"|^(?:Remote|Hybrid|On[- ]?site|WFH|Work\s*From\s*Home)$",
             re.IGNORECASE,
         )
 
-        # location inside a line (not necessarily whole-line) — used to strip 'Remote' from company lines
-        locate_in_line_re = re.compile(
-            r"(?:Remote|Hybrid|On[- ]?site|WFH|Work\s*From\s*Home|[A-Za-z][A-Za-z .'\-]+,\s*(?:[A-Z]{2}|\d{4,5}|[A-Za-z][A-Za-z .'\-]+))",
-            re.IGNORECASE,
-        )
-
-        title_kw_regex = re.compile(
-            r"\b(Engineer|Developer|Manager|Director|Lead|Specialist|Analyst|Consultant|Tester|QA|SQA|Quality|Product|Architect|Coordinator|Administrator|Scientist|Technician)\b",
-            re.IGNORECASE,
-        )
-
         items = []
-        for i, (mstart, mend) in enumerate(merged_dates):
-            # Extract date string
-            date_str = re.sub(r"[–—]", "-", content[mstart:mend].strip())
-            start_date, end_date = self._split_date(date_str)
+        for match in entry_pattern.finditer(section_text):
+            title = match.group("title").strip()
+            company = match.group("company").strip()
+            location = (match.group("location") or "").strip()
+            start = match.group("start").strip()
+            end = match.group("end").strip()
+            details_text = (match.group("details") or "").strip()
 
-            # Header (before date) and details (after date)
-            prev_anchor = content.rfind("\n\n", 0, mstart)
-            header_text = content[prev_anchor + 2 if prev_anchor != -1 else 0:mstart].strip()
-            next_start = merged_dates[i + 1][0] if i + 1 < len(merged_dates) else len(content)
-            details_text = content[mend:next_start].strip()
-
-            # Candidate lines for company/title detection
-            pre_lines = [ln.strip() for ln in re.split(r"\n+", header_text) if ln.strip()]
-            post_lines = [ln.strip() for ln in re.split(r"\n+", details_text) if ln.strip()]
-            candidates = (pre_lines[-2:] if pre_lines else []) + (post_lines[:2] if post_lines else [])
-
-            # Identify company (prefer lines with company keywords)
-            company = ""
-            # prefer company pattern in candidates
-            for ln in candidates:
-                if company_kw_regex.search(ln):
-                    company = ln
-                    break
-            # if still empty, prefer a candidate that looks like a location line (often company + location)
-            if not company:
-                for ln in candidates:
-                    if location_regex.search(ln):
-                        company = ln
-                        break
-            # final fallback
-            if not company and post_lines:
-                company = post_lines[0]
-
-            # If company contains an inline location token like "Lucid Software Remote",
-            # move that portion into location and clean company string.
-            location = ""
-            if company:
-                loc_in_company = locate_in_line_re.search(company)
-                if loc_in_company:
-                    location = loc_in_company.group(0).strip()
-                    company = company.replace(loc_in_company.group(0), "").strip(" ,;:-")
-            # If we didn't get location from company line, try scanning first few lines for an anchored location
-            if not location:
-                for ln in (pre_lines + post_lines)[:4]:
-                    if location_regex.search(ln):
-                        location = ln.strip()
-                        break
-
-            # Identify job title (prefer the last pre-line if it is not the company)
-            job_title = ""
-            if pre_lines:
-                candidate = pre_lines[-1]
-                if candidate and candidate != company:
-                    job_title = candidate
-                elif len(pre_lines) > 1:
-                    job_title = pre_lines[-2]
-
-            # fallback: find a candidate that looks like a title by keyword
-            if not job_title:
-                job_title = next((ln for ln in candidates if title_kw_regex.search(ln)), "")
-
-            # Clean details & extract bullets using your helper (passes compiled date_re & location_regex)
-            detail_lines, bullets = self._extract_details(details_text, date_re, job_title, company, location_regex)
-
-            free_text = "\n".join(detail_lines).strip()
+            free_lines, bullets = self._extract_details(details_text, date_re, title, company, location_regex)
+            free_text = "\n".join(free_lines).strip()
 
             items.append({
-                "Job Title": job_title,
+                "Job Title": title,
                 "Company": company,
                 "Location": location,
-                "Start Date": start_date,
-                "End Date": end_date,
+                "Start Date": start,
+                "End Date": end,
                 "Details": free_text,
                 "Bullets": bullets
             })
 
-        return items
+        return {"section": section_text, "items": items}
 
-    def _split_date(self, date_str: str):
-        """Splits a date string into start and end."""
-        if "-" in date_str:
-            parts = [p.strip() for p in date_str.split("-", 1)]
-            return parts[0], parts[1]
-        return date_str.strip(), ""
 
-    def _extract_details(self, details_region, date_re, job_title, company, location_regex):
-        """Cleans detail lines and separates bullets."""
-        detail_lines = []
-        for ln in re.split(r"\n+", details_region):
-            ln = ln.strip()
-            if not ln or date_re.search(ln) or ln in (job_title, company):
+    def _collect_bullets(self, lines):
+        """
+        Given a list of lines (already filtered), returns (free_lines, bullets).
+        - Lines starting with • - * are new bullets.
+        - Lines containing inline '•' are split into multiple bullets.
+        - Other lines are treated as continuations of the previous bullet if one exists,
+        otherwise they are treated as free/detail text.
+        """
+        bullets = []
+        free_lines = []
+
+        for ln in lines:
+            s = ln.strip()
+            if not s:
                 continue
-            # skip pure location-only lines
-            if location_regex.fullmatch(ln):
-                continue
-            detail_lines.append(ln)
 
-        bullets, free_lines = [], []
-        for ln in detail_lines:
-            # extract bullet prefix and text
-            m = re.match(r"^[\u2022\-\*\•\s]{0,4}(.*)$", ln)
-            if m and (ln.startswith(("•", "-", "*")) or ln.strip().startswith("•")):
-                if (b := m.group(1).strip()):
-                    bullets.append(b)
-            elif "•" in ln:
-                bullets.extend([p.strip() for p in ln.split("•") if p.strip()])
+            # starts with an explicit bullet marker
+            if re.match(r'^[\u2022\-\*\•]\s*', s):
+                content = re.sub(r'^[\u2022\-\*\•\s]{1,4}', '', s).strip()
+                if content:
+                    bullets.append(content)
+            # contains inline bullets (e.g. "foo • bar • baz")
+            elif "•" in s:
+                parts = [p.strip() for p in s.split("•") if p.strip()]
+                bullets.extend(parts)
             else:
-                # treat non-bullet lines as free lines (paragraphs / continuation)
-                free_lines.append(ln)
+                # continuation: attach to last bullet, or if none, treat as free/detail text
+                if bullets:
+                    bullets[-1] = bullets[-1] + " " + s
+                else:
+                    free_lines.append(s)
 
         return free_lines, bullets
 
+
+    def _extract_details(self, details_region, date_re, job_title, company, location_regex):
+        """
+        Filter out lines that are job headers, dates, or locations; then collect bullets,
+        merging wrapped lines into previous bullets when appropriate.
+        """
+        if not details_region:
+            return [], []
+
+        raw_lines = [ln for ln in re.split(r"\n+", details_region)]
+        filtered = []
+        for ln in raw_lines:
+            ln_str = ln.strip()
+            if not ln_str:
+                continue
+            if ln_str == job_title or ln_str == company:
+                continue
+            if date_re.search(ln_str):
+                continue
+            if location_regex.fullmatch(ln_str):
+                continue
+            filtered.append(ln)
+
+        free_lines, bullets = self._collect_bullets(filtered)
+        return free_lines, bullets
+
+
     def _parse_by_paragraphs(self, content: str):
-        """Fallback: parse section by paragraph blocks when dates are missing."""
         paragraphs = [p.strip() for p in re.split(r"\n\s*\n", re.sub(r"\n{2,}", "\n\n", content)) if p.strip()]
         items = []
-
         for block in paragraphs:
-            block = re.sub(r"\n+", " ", block)  # join wrapped lines
-            # Try to find date(s) inside the block using same date logic
-            # for backward compatibility, we use a loose DATE_RANGE look (if you have one in config)
-            date_match = re.search(r"\b(?:Jan(?:uary)?|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b.*?\d{4}|\b\d{4}\b", block, flags=re.IGNORECASE)
-            start_date, end_date = ("", "")
+            block_joined = re.sub(r"\n+", " ", block).strip()
+            date_match = re.search(r"(?:Jan(?:uary)?|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s*\d{4}|\b\d{4}\b", block_joined, flags=re.IGNORECASE)
+            start_date = end_date = ""
             if date_match:
-                # attempt to split if there's a range inside the match
                 dt = re.sub(r"[–—]", "-", date_match.group(0))
                 if "-" in dt:
-                    start_date, end_date = [p.strip() for p in dt.split("-", 1)]
+                    parts = [p.strip() for p in dt.split("-", 1)]
+                    start_date, end_date = parts[0], parts[1]
                 else:
                     start_date = dt.strip()
 
-            lines = [ln.strip() for ln in block.splitlines() if ln.strip()]
-            if not lines:
-                continue
+            # split title/company heuristically
+            first_line = block.splitlines()[0].strip() if "\n" in block else block_joined
+            split = re.split(r"\s+(?:@| at | - |—|–|\|)\s+", first_line, maxsplit=1, flags=re.IGNORECASE)
+            job_title, company = (split[0].strip(), split[1].strip()) if len(split) == 2 else (first_line.strip(), "")
 
-            # Try "Title @ Company" split
-            job_title, company, detail_lines = lines[0], "", []
-            split = re.split(r"\s+(?:@| at | - |—|–|\|)\s+", lines[0], maxsplit=1, flags=re.IGNORECASE)
-            if len(split) >= 2:
-                job_title, company = split[0], split[1]
-                detail_lines = lines[1:]
-            elif len(lines) > 1:
-                company = lines[1]
-                detail_lines = lines[2:]
-
-            bullets, free_lines = [], []
-            for ln in detail_lines:
-                if re.search(r"\d{4}", ln):
-                    continue
-                m = re.match(r"^[\u2022\-\*\•\s]{0,4}(.*)$", ln)
-                if m and m.group(1).strip():
-                    bullets.append(m.group(1).strip())
-                else:
-                    free_lines.append(ln)
+            lines = [ln.strip() for ln in re.split(r"\n+", block) if ln.strip()]
+            content_lines = lines[1:] if len(lines) > 1 else []
+            free_lines, bullets = self._collect_bullets(content_lines)
 
             items.append({
                 "Job Title": job_title,
                 "Company": company,
                 "Start Date": start_date,
                 "End Date": end_date,
-                "Details": "\n".join(free_lines).strip(),
+                "Details": " ".join(free_lines).strip(),
                 "Bullets": bullets
             })
-
         return items
-

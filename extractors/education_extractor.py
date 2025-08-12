@@ -103,11 +103,11 @@ class EducationExtractor(BaseExtractor):
             if not lines:
                 return items
 
-            # Graduation Date (uses your DATE_RANGE pattern from config)
+            # Graduation Date
             grad_match = re.search(DATE_RANGE, text, re.IGNORECASE)
             grad_date = grad_match.group(0).strip() if grad_match else ""
 
-            # 1) Location detection pass: scan first few lines for anchored location candidates
+            # Location
             location = ""
             for ln in lines[:3]:
                 loc_match = _LOCATION_RE.search(ln)
@@ -117,8 +117,6 @@ class EducationExtractor(BaseExtractor):
                     if cand:
                         location = cand
                         break
-
-            # 2) If still not found, try specifically on the degree line (sometimes location sits at end of degree line)
             if not location:
                 degree_line_candidate = None
                 for ln in lines:
@@ -133,7 +131,7 @@ class EducationExtractor(BaseExtractor):
                         if cand:
                             location = cand
 
-            # Institution: first line that’s not GPA, not projects, not minors
+            # Institution
             institution_line = ""
             for ln in lines:
                 if _GPA_RE.search(ln) or _MINORS_RE.search(ln) or "project" in ln.lower():
@@ -143,11 +141,8 @@ class EducationExtractor(BaseExtractor):
             institution_line = institution_line.strip(" |,;-")
             if grad_date and grad_date in institution_line:
                 institution_line = institution_line.replace(grad_date, "").strip(",;- ")
-
-            # If institution_line contains the location (same-line format), remove it
             if location and location in institution_line:
                 institution_line = institution_line.replace(location, "").strip(" ,;:-")
-
             institution = institution_line
 
             # Degree & Emphasis
@@ -157,8 +152,6 @@ class EducationExtractor(BaseExtractor):
                     degree_idx = i
                     break
             degree_line = lines[degree_idx] if degree_idx is not None else (lines[1] if len(lines) > 1 else lines[0])
-
-            # Remove location from degree_line if it's trailing there
             if location and location in degree_line:
                 degree_line = degree_line.replace(location, "").strip(",;:- ")
 
@@ -181,25 +174,36 @@ class EducationExtractor(BaseExtractor):
             if gpa_m:
                 gpa_val = f"{gpa_m.group(1)}/{gpa_m.group(2)}" if gpa_m.group(2) else gpa_m.group(1)
 
-            # Minors (flattened)
+            # Minors
             minors_val = ""
             minors_m = _MINORS_RE.search(text)
             if minors_m:
                 minors_val = minors_m.group(1).strip().replace("\n", "; ")
 
-            # Projects (flattened)
-            projects_val = ""
+            # Collect Details (Projects + Scholarships + leftovers)
+            details_parts = []
+
             projects_m = _PROJECTS_RE.search(text)
             if projects_m:
-                projects_val = re.sub(r"\s*\n\s*", "; ", projects_m.group(1).strip())
+                details_parts.append(re.sub(r"\s*\n\s*", "; ", projects_m.group(1).strip()))
 
-            # Scholarships / Awards (flattened)
-            scholarships_val = ""
             scholarships_m = _SCHOLARSHIPS_RE.search(text)
             if scholarships_m:
-                scholarships_val = re.sub(r"\s*\n\s*", "; ", scholarships_m.group(1).strip())
+                details_parts.append(re.sub(r"\s*\n\s*", "; ", scholarships_m.group(1).strip()))
 
-            # Final degree/emphasis string
+            # Remaining lines not used in Institution, Degree, GPA, Minors
+            used_chunks = {institution, degree_line, location, gpa_val, minors_val}
+            for ln in lines:
+                if any(val and val in ln for val in used_chunks):
+                    continue
+                if _PROJECTS_RE.search(ln) or _SCHOLARSHIPS_RE.search(ln):
+                    continue
+                details_parts.append(ln)
+
+            # Combine all details
+            details_val = "; ".join(p for p in details_parts if p)
+
+            # Final degree/emphasis
             degree_emphasis = degree
             if emphasis:
                 degree_emphasis = f"{degree_emphasis}: {emphasis}" if degree_emphasis else emphasis
@@ -211,8 +215,7 @@ class EducationExtractor(BaseExtractor):
                 "Degree & Emphasis": degree_emphasis,
                 "GPA": gpa_val,
                 "Minors": minors_val,
-                "Projects": projects_val,
-                "Scholarships / Awards": scholarships_val,
+                "Details": details_val
             })
 
             return items
@@ -225,6 +228,5 @@ class EducationExtractor(BaseExtractor):
                 "Degree & Emphasis": "",
                 "GPA": "",
                 "Minors": "",
-                "Projects": "",
-                "Scholarships / Awards": "",
+                "Details": ""
             }]
