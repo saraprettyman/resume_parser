@@ -62,11 +62,17 @@ class Display:
         table.add_column("Skills", style="white")
 
         for category, data in extracted.items():
-            found_str = ", ".join(f"[green]{s}[/green]" for s in data.get("found", [])) if data.get("found") else ""
+            if data.get("found"):
+                found_str = ", ".join(f"[green]{s}[/green]" for s in data["found"])
+            else:
+                found_str = "[dim]None[/dim]"  # dim if no skills found
+
             missing_str = ", ".join(f"[dim]{s}[/dim]" for s in data.get("missing", [])) if data.get("missing") else ""
             combined = (found_str + (f"  |  {missing_str}" if missing_str else "")).strip()
             table.add_row(category, combined)
+
         console.print(table)
+
 
     def display_experience(self, exp_res: dict):
         items = exp_res.get("items", []) if isinstance(exp_res, dict) else (exp_res or [])

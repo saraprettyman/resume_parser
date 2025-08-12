@@ -33,53 +33,43 @@ def print_section_title(title):
         expand=True
     )
     console.print(panel)
+
 def interactive_cli():
     console.clear()
-
-    # Show banner
     fig = Figlet(font="standard")
     console.print(Align.center(fig.renderText("Resume Lens")), style="bold green")
     console.print("\n")
-    console.print(Panel(
-        Align.center(
-            "[bold cyan]Welcome to Resume Lens![/bold cyan]\n\n"
-            "Analyze resumes for ATS compatibility, skills matching,\n"
-            "and overall profile readiness.\n",
-            vertical="middle"
-        ),
-        style="bold blue",
-        padding=(0, 0)
-    ))
 
-    # Ask for mode first
-    console.print("\n[bold yellow]Please choose an analysis mode:[/bold yellow]")
-    console.print("[cyan]1.[/cyan] Profile / Readability (ATS Profile Check)")
-    console.print("[cyan]2.[/cyan] Skills Analysis\n")
+    # Main menu
+    console.print("[bold cyan]Select an option:[/bold cyan]")
+    console.print(" [green]1[/green]. Profile / Readability Check")
+    console.print(" [green]2[/green]. Skills Analysis")
 
-    mode_choice = input("Enter choice (1 or 2) [default: 2]: ").strip() or "2"
-    if mode_choice == "1":
-        mode_choice = "r"
-    elif mode_choice == "2":
-        mode_choice = "s"
-    else:
-        console.print("[red]Invalid choice. Defaulting to Skills Analysis.[/red]")
-        mode_choice = "s"
+    mode_choice = prompt("Enter choice", "1").lower()
 
-    # Now ask for the file
+
+    # Skills sub-menu if needed
+    sub_mode = None
+    if mode_choice in ["2", "skills"]:
+        console.print("\n[bold cyan]Select skills analysis mode:[/bold cyan]")
+        console.print(" [green]g[/green]. General")
+        console.print(" [green]r[/green]. Role-specific\n")
+        sub_mode = prompt("Enter choice", "g").lower()
+
+    # Now ask for file
     console.print("\n")
     file_path = prompt("Enter path to resume file", "real_resume_example.pdf")
     console.print("\n")
 
     file_path_obj = Path(file_path)
     ext = file_path_obj.suffix.lower()
-
     if not file_path_obj.exists():
         console.print(f"[red]Error:[/red] File not found: {file_path}")
         return
     if ext not in SUPPORTED_EXTENSIONS:
         console.print(
             f"[red]Error:[/red] Unsupported file type: '{ext}'.\n"
-            f"Please use one of the following: {', '.join(SUPPORTED_EXTENSIONS)}"
+            f"Please use one of: {', '.join(SUPPORTED_EXTENSIONS)}"
         )
         return
 
@@ -92,7 +82,7 @@ def interactive_cli():
 
     console.print("\n")
 
-    if mode_choice in ["r", "readability", "profile"]:
+    if mode_choice in ["1", "r", "readability", "profile"]:
         console.clear()
         print_section_title("ATS Profile Check")
         summary_res = summary_ex.extract(file_path)
@@ -109,18 +99,15 @@ def interactive_cli():
         display.display_education(edu_res, show_gpa=True)
         display.display_experience(exp_res)
 
-        # TODO: add a project section
-
-    elif mode_choice in ["s", "skills"]:
-        sub_mode = prompt("Choose skills analysis mode [g: general, r: role]", "g").lower()
-        console.print("\n")
-
+    elif mode_choice in ["2", "s", "skills"]:
         if sub_mode in ["g", "general"]:
+            console.clear()
             print_section_title("General Skills Review")
             extracted = skills_checker.extract_general_skills(file_path)
             display.display_skills_table(extracted, title="")
 
         elif sub_mode in ["r", "role"]:
+            console.clear()
             roles = skills_checker.load_roles()
             if not roles:
                 console.print("[red]No roles found in skills_master.json[/red]")
