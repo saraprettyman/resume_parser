@@ -1,34 +1,73 @@
+"""
+utils/display.py
+
+Provides rich console output utilities for displaying different sections
+of extracted resume data (contact info, skills, experience, education, etc.).
+Uses `rich` to produce nicely formatted tables and panels.
+"""
+from typing import Optional
 from rich.table import Table
 from rich.panel import Panel
 from rich.align import Align
 from rich.console import Console
-from rich.text import Text
-from rich import box
 
+# Global console for printing
 console = Console()
 
+
 class Display:
+    """
+    Handles all display logic for parsed resume sections.
+    Each method takes parsed data and renders it in a user-friendly format.
+    """
+
+    # ------------------------
+    # Generic Section Display
+    # ------------------------
     def display_section_text(self, title: str, text: str):
-        panel = Panel(Align.left(text or "[dim]No content found[/dim]"), title=title, expand=True)
+        """
+        Displays a text block inside a titled panel.
+
+        Args:
+            title (str): Title for the panel.
+            text (str): Body text. If empty, shows a "No content found" message.
+        """
+        panel = Panel(
+            Align.left(text or "[dim]No content found[/dim]"),
+            title=title,
+            expand=True
+        )
         console.print(panel)
 
+    # ------------------------
+    # Contact Information
+    # ------------------------
     def display_contact(self, contact: dict, full_text: str = ""):
+        """
+        Displays contact details (name, email, phone, LinkedIn, GitHub, etc.) in a table.
+
+        Args:
+            contact (dict): Dictionary of contact fields.
+            full_text (str, optional): Not currently used for display but could be logged.
+        """
         table = Table(
             show_header=False,
-            box=None,         # no borders
+            box=None,
             expand=True,
-            padding=(0, 1)    # vertical / horizontal padding
+            padding=(0, 1)
         )
 
-        # Three columns: icon | label | value
+        # Table columns: icon | label | value
         table.add_column("Icon", width=2, no_wrap=True)
         table.add_column("Field", style="bold cyan", width=15, no_wrap=True)
         table.add_column("Value", style="white", overflow="fold")
 
-        def safe_value(key):
+        def safe_value(key: str) -> str:
+            """Safely retrieve and strip a field from `contact`."""
             return (contact.get(key, "") or "").strip()
 
-        def make_link(url, label=None, max_len=40):
+        def make_link(url: Optional[str], label: Optional[str] = None, max_len: int = 40) -> str:
+            """Formats clickable links for terminals supporting OSC 8 hyperlinks."""
             if not url or not url.strip():
                 return ""
             display_text = label or url
@@ -55,26 +94,49 @@ class Display:
 
         console.print(table)
 
+    # ------------------------
+    # Skills
+    # ------------------------
+    def display_skills_table(self, extracted: dict, title: Optional[str] = None):
+        """
+        Displays skills categorized into found/missing.
 
-    def display_skills_table(self, extracted: dict, title=None):
-        table = Table(title=title, show_lines=True, expand=True, width=console.width)
+        Args:
+            extracted (dict): {
+                "CategoryName": {"found": [...], "missing": [...]}, ...
+            }
+            title (str, optional): Table title.
+        """
+        table = Table(
+            title=title,
+            show_lines=True,
+            expand=True,
+            width=console.width
+        )
         table.add_column("Category", style="bold cyan", no_wrap=True)
         table.add_column("Skills", style="white")
 
         for category, data in extracted.items():
-            if data.get("found"):
-                found_str = ", ".join(f"[green]{s}[/green]" for s in data["found"])
-            else:
-                found_str = "[dim]None[/dim]"  # dim if no skills found
-
-            missing_str = ", ".join(f"[dim]{s}[/dim]" for s in data.get("missing", [])) if data.get("missing") else ""
-            combined = (found_str + (f"  |  {missing_str}" if missing_str else "")).strip()
-            table.add_row(category, combined)
+            found_str = ", ".join(f"[green]{s}[/green]" for s in data.get("found", [])) \
+                if data.get("found") else "[dim]None[/dim]"
+            missing_str = ", ".join(f"[dim]{s}[/dim]" for s in data.get("missing", [])) \
+                if data.get("missing") else ""
+            combined = found_str + (f"  |  {missing_str}" if missing_str else "")
+            table.add_row(category, combined.strip())
 
         console.print(table)
 
-
+    # ------------------------
+    # Experience
+    # ------------------------
     def display_experience(self, exp_res: dict):
+        """
+        Displays work experience in a table.
+
+        Args:
+            exp_res (dict or list): Either:
+                {"items": [...], "section": "..."} or just a list of experience items.
+        """
         items = exp_res.get("items", []) if isinstance(exp_res, dict) else (exp_res or [])
         if not items:
             panel = Panel(
@@ -89,7 +151,12 @@ class Display:
             console.print(panel)
             return
 
-        table = Table(title="Experience", show_lines=True, expand=True, width=console.width)
+        table = Table(
+            title="Experience",
+            show_lines=True,
+            expand=True,
+            width=console.width
+        )
         table.add_column("Job Title", style="bold cyan")
         table.add_column("Company", style="cyan")
         table.add_column("Start Date", style="white")
@@ -98,17 +165,14 @@ class Display:
 
         for it in items:
             if not isinstance(it, dict):
-                continue  # skip invalid entries
+                continue
 
-            # Merge bullets into details safely
+            # Merge bullets into details
             bullets = it.get("Bullets", [])
-            if bullets:
-                details = "\n".join(
-                    b if b.strip().startswith("•") else f"• {b}"
-                    for b in bullets
-                )
-            else:
-                details = it.get("Details", "")
+            details = "\n".join(
+                b if b.strip().startswith("•") else f"• {b}"
+                for b in bullets
+            ) if bullets else it.get("Details", "")
 
             table.add_row(
                 it.get("Job Title", ""),
@@ -120,16 +184,19 @@ class Display:
 
         console.print(table)
 
-    def display_education(self, education_res, show_gpa=True):
+    # ------------------------
+    # Education
+    # ------------------------
+    def display_education(self, education_res, show_gpa: bool = True):
         """
-        Accepts either:
-        - a dict like {"section": "...", "items": [ {...}, ... ] }
-        - or a plain list [ {...}, ... ]
-        Displays a table with Institution | Location, Graduation Date, Degree & Emphasis, GPA, Minors, Details.
-        Missing fields are left blank (no placeholder).
-        """
+        Displays education details in a table, falling back to raw section text if parsing fails.
 
-        # normalize to items list and raw section for fallback
+        Args:
+            education_res (dict or list): Either:
+                {"section": "...", "items": [ {...}, ... ] }
+                or a plain list [ {...}, ... ]
+            show_gpa (bool): Whether to show the GPA column.
+        """
         if isinstance(education_res, dict):
             items = education_res.get("items", []) or []
             raw_section = education_res.get("section", "")
@@ -137,17 +204,24 @@ class Display:
             items = education_res
             raw_section = ""
         else:
-            # unexpected shape: show it raw
             items = []
             raw_section = str(education_res)
 
         if not items:
-            panel = Panel(Align.left(raw_section or "[dim]No education found[/dim]"), title="Education", expand=True)
+            panel = Panel(
+                Align.left(raw_section or "[dim]No education found[/dim]"),
+                title="Education",
+                expand=True
+            )
             console.print(panel)
             return
 
-        table = Table(title="Education", show_lines=True, expand=True, width=console.width)
-        # Institution | Location as the first column
+        table = Table(
+            title="Education",
+            show_lines=True,
+            expand=True,
+            width=console.width
+        )
         table.add_column("Institution | Location")
         table.add_column("Graduation Date", no_wrap=True)
         table.add_column("Degree & Emphasis", style="cyan")
@@ -156,23 +230,18 @@ class Display:
         table.add_column("Minors", style="white")
         table.add_column("Details", style="white")
 
-        def safe_get(entry, key):
-            # Return a plain string (empty if missing). Accept dicts or other types gracefully.
+        def safe_get(entry, key: str) -> str:
+            """Safely extract a string value from a dict entry."""
             if isinstance(entry, dict):
                 v = entry.get(key, "")
-                return (str(v).strip() if v is not None else "")
+                return str(v).strip() if v is not None else ""
             return str(entry).strip()
 
-        # add rows; guard against mismatched shapes
         for edu in items:
             try:
-                # institution + location
                 inst = safe_get(edu, "Institution")
                 loc = safe_get(edu, "Location")
-                if inst and loc:
-                    inst_loc = f"{inst} | {loc}"
-                else:
-                    inst_loc = inst or loc or ""
+                inst_loc = f"{inst} | {loc}" if inst and loc else inst or loc or ""
 
                 row = [
                     inst_loc,
@@ -185,11 +254,15 @@ class Display:
                     safe_get(edu, "Minors"),
                     safe_get(edu, "Details"),
                 ])
-
                 table.add_row(*row)
+
             except Exception:
-                # defensive: if anything goes wrong for a row, print the raw section instead of failing
-                panel = Panel(Align.left(raw_section or "[dim]No education found[/dim]"), title="Education", expand=True)
+                # Fallback: show raw section if any row fails
+                panel = Panel(
+                    Align.left(raw_section or "[dim]No education found[/dim]"),
+                    title="Education",
+                    expand=True
+                )
                 console.print(panel)
                 return
 

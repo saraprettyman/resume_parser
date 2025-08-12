@@ -1,4 +1,15 @@
-# cli.py
+"""
+cli.py
+
+Interactive command-line interface for Resume Lens.
+
+Provides a menu-driven CLI for:
+1. ATS Profile / Readability Checks
+2. Skills Analysis (General or Role-Specific)
+
+Author: [Sara Prettyman]
+"""
+
 from rich.console import Console
 from rich.text import Text
 from rich.panel import Panel
@@ -13,19 +24,41 @@ from extractors.education_extractor import EducationExtractor
 from utils.skills_checker import SkillsChecker
 from utils.display import Display
 
+# Console renderer and display helper
 console = Console()
 display = Display()
 
-SUPPORTED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt", ".rtf", ".odt", ".md", ".html", ".htm"}
+# Supported file formats
+SUPPORTED_EXTENSIONS = {
+    ".pdf", ".docx", ".doc", ".txt", ".rtf", ".odt", ".md", ".html", ".htm"
+}
 
-def prompt(question, default=None):
+
+def prompt(question: str, default: str = None) -> str:
+    """
+    Prompt the user for input with an optional default value.
+
+    Args:
+        question (str): Prompt text to display.
+        default (str, optional): Default value to return if no input is provided.
+
+    Returns:
+        str: User input or the default value.
+    """
     q_text = Text(question, style="bold cyan")
     if default:
         q_text.append(f" ({default})", style="dim")
     console.print(q_text, end=" ")
     return input().strip() or default
 
-def print_section_title(title):
+
+def print_section_title(title: str) -> None:
+    """
+    Print a visually distinct section title.
+
+    Args:
+        title (str): The title text to display.
+    """
     panel = Panel(
         Align.center(f"[bold white]{title}[/bold white]", vertical="middle"),
         style="bold blue",
@@ -34,7 +67,16 @@ def print_section_title(title):
     )
     console.print(panel)
 
-def interactive_cli():
+
+def interactive_cli() -> None:
+    """
+    Run the interactive CLI for Resume Lens.
+
+    This function:
+    - Displays the main menu
+    - Prompts for resume file input
+    - Runs either ATS Profile Check or Skills Analysis
+    """
     console.clear()
     fig = Figlet(font="standard")
     console.print(Align.center(fig.renderText("Resume Lens")), style="bold green")
@@ -47,22 +89,23 @@ def interactive_cli():
 
     mode_choice = prompt("Enter choice", "1").lower()
 
-
-    # Skills sub-menu if needed
+    # Skills sub-menu
     sub_mode = None
-    if mode_choice in ["2", "skills"]:
+    if mode_choice in {"2", "skills"}:
         console.print("\n[bold cyan]Select skills analysis mode:[/bold cyan]")
         console.print(" [green]g[/green]. General")
         console.print(" [green]r[/green]. Role-specific\n")
         sub_mode = prompt("Enter choice", "g").lower()
 
-    # Now ask for file
+    # Resume file input
     console.print("\n")
     file_path = prompt("Enter path to resume file", "real_resume_example.pdf")
     console.print("\n")
 
     file_path_obj = Path(file_path)
     ext = file_path_obj.suffix.lower()
+
+    # Validation
     if not file_path_obj.exists():
         console.print(f"[red]Error:[/red] File not found: {file_path}")
         return
@@ -73,7 +116,7 @@ def interactive_cli():
         )
         return
 
-    # Instantiate extractors/checkers
+    # Instantiate extractors and utilities
     summary_ex = SummaryExtractor()
     contact_ex = ContactExtractor()
     exp_ex = ExperienceExtractor()
@@ -82,9 +125,11 @@ def interactive_cli():
 
     console.print("\n")
 
-    if mode_choice in ["1", "r", "readability", "profile"]:
+    # Mode: ATS Profile Check
+    if mode_choice in {"1", "r", "readability", "profile"}:
         console.clear()
         print_section_title("ATS Profile Check")
+
         summary_res = summary_ex.extract(file_path)
         display.display_section_text("Professional Summary", summary_res.get("section", ""))
 
@@ -93,20 +138,22 @@ def interactive_cli():
 
         console.print("\n")
         print_section_title("Education & Work Experience Check")
+
         edu_res = edu_ex.extract(file_path)
         exp_res = exp_ex.extract(file_path)
 
         display.display_education(edu_res, show_gpa=True)
         display.display_experience(exp_res)
 
-    elif mode_choice in ["2", "s", "skills"]:
-        if sub_mode in ["g", "general"]:
+    # Mode: Skills Analysis
+    elif mode_choice in {"2", "s", "skills"}:
+        if sub_mode in {"g", "general"}:
             console.clear()
             print_section_title("General Skills Review")
             extracted = skills_checker.extract_general_skills(file_path)
             display.display_skills_table(extracted, title="")
 
-        elif sub_mode in ["r", "role"]:
+        elif sub_mode in {"r", "role"}:
             console.clear()
             roles = skills_checker.load_roles()
             if not roles:
@@ -118,7 +165,7 @@ def interactive_cli():
                 console.print(f"[cyan]{i}[/cyan]. {role}")
 
             role_idx_str = prompt("Select role by number")
-            if role_idx_str is None:
+            if not role_idx_str:
                 console.print("[red]No role selected[/red]")
                 return
             try:

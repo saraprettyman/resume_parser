@@ -11,10 +11,30 @@ from config.patterns import (
 
 
 class EducationExtractor(BaseExtractor):
+    """
+    Extracts structured education history from a resume file.
+
+    **Output Structure**:
+    {
+        "section": <raw education section text>,
+        "items": [
+            {
+                "Institution": str,
+                "Location": str,
+                "Graduation Date": str,
+                "Degree & Emphasis": str,
+                "GPA": str,
+                "Minors": str,
+                "Details": str
+            },
+            ...
+        ]
+    }
+    """
+
     def extract(self, file_path: str) -> dict:
         """
-        Returns: { "section": <raw section text>, "items": [ {Institution, Location, Graduation Date,
-                    "Degree & Emphasis", "GPA", "Minors", "Details" }, ... ] }
+        Reads the resume file, finds the Education section, and parses it into structured fields.
         """
         text = self.normalize(read_resume(file_path))
         section = find_section(text, EDU_START, EDU_END) or ""
@@ -23,9 +43,15 @@ class EducationExtractor(BaseExtractor):
 
     def _sanitize_location_candidate(self, cand: str) -> str | None:
         """
-        Try to repair a location candidate that contains degree words.
-        - If candidate looks like 'Statistics Logan, Utah', we convert -> 'Logan, Utah'.
-        - If candidate still looks like degree text (e.g. 'Anticipatory Intelligence, Data Science'), return None.
+        Clean up and validate a potential location string.
+        
+        - If the string contains degree keywords, we attempt to strip them out.
+        - If it still looks like degree text after cleanup, return None.
+        - Otherwise, return a normalized "City, State" style string.
+        
+        Example:
+            "Statistics Logan, Utah" → "Logan, Utah"
+            "Anticipatory Intelligence, Data Science" → None
         """
         if not cand:
             return None
@@ -44,13 +70,26 @@ class EducationExtractor(BaseExtractor):
             return None
         return cand.strip()
 
-    def parse_education(self, section: str):
+    def parse_education(self, section: str) -> list[dict]:
+        """
+        Parse the education section text into structured items.
+        
+        Handles:
+        - Institution name
+        - Location
+        - Graduation date
+        - Degree + Emphasis
+        - GPA
+        - Minors
+        - Project and scholarship details
+        - Any remaining descriptive details
+        """
         items = []
         try:
             if not section.strip():
                 return items
 
-            # Normalize text
+            # Normalize text and split into lines
             text = section.replace("•", " ").replace("\t", " ").strip()
             text = re.sub(r"[ ]{2,}", " ", text)
             lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
@@ -63,14 +102,14 @@ class EducationExtractor(BaseExtractor):
 
             # Location
             location = ""
-            for ln in lines[:3]:
+            for ln in lines[:3]:  # Check early lines first
                 loc_match = re.search(LOCATION_PATTERN, ln, re.IGNORECASE)
                 if loc_match:
                     cand = self._sanitize_location_candidate(loc_match.group(1).strip())
                     if cand:
                         location = cand
                         break
-            if not location:
+            if not location:  # Secondary check inside degree lines
                 degree_line_candidate = next((ln for ln in lines if re.search(DEGREE_KEYWORD_PATTERN, ln, re.IGNORECASE)), None)
                 if degree_line_candidate:
                     loc_match = re.search(LOCATION_PATTERN, degree_line_candidate, re.IGNORECASE)
@@ -80,24 +119,21 @@ class EducationExtractor(BaseExtractor):
                             location = cand
 
             # Institution
-            institution_line = ""
             GPA_RE = re.compile(GPA_PATTERN, re.IGNORECASE)
-            for ln in lines:
-                if GPA_RE.search(ln) or re.search(MINORS_PATTERN, ln, re.IGNORECASE) or "project" in ln.lower():
-                    continue
-                institution_line = ln
-                break
-            institution_line = institution_line.strip(" |,;-")
-            if grad_date and grad_date in institution_line:
+            institution_line = next(
+                (ln for ln in lines if not (GPA_RE.search(ln) or re.search(MINORS_PATTERN, ln, re.IGNORECASE) or "project" in ln.lower())),
+                ""
+            ).strip(" |,;-")
+            if grad_date:
                 institution_line = institution_line.replace(grad_date, "").strip(",;- ")
-            if location and location in institution_line:
+            if location:
                 institution_line = institution_line.replace(location, "").strip(" ,;:-")
             institution = institution_line
 
             # Degree & Emphasis
             degree_idx = next((i for i, ln in enumerate(lines) if re.search(DEGREE_KEYWORD_PATTERN, ln, re.IGNORECASE)), None)
             degree_line = lines[degree_idx] if degree_idx is not None else (lines[1] if len(lines) > 1 else lines[0])
-            if location and location in degree_line:
+            if location:
                 degree_line = degree_line.replace(location, "").strip(",;:- ")
 
             degree_match = re.search(
@@ -135,7 +171,7 @@ class EducationExtractor(BaseExtractor):
             if scholarships_m:
                 details_parts.append(re.sub(r"\s*\n\s*", "; ", scholarships_m.group(1).strip()))
 
-            # Remaining unused lines
+            # Remaining lines that are not already used
             used_chunks = {institution, degree_line, location, gpa_val, minors_val}
             for ln in lines:
                 if any(val and val in ln for val in used_chunks):
@@ -146,7 +182,7 @@ class EducationExtractor(BaseExtractor):
 
             details_val = "; ".join(p for p in details_parts if p)
 
-            # Final degree/emphasis
+            # Final degree + emphasis
             degree_emphasis = degree
             if emphasis:
                 degree_emphasis = f"{degree_emphasis}: {emphasis}" if degree_emphasis else emphasis
@@ -163,6 +199,7 @@ class EducationExtractor(BaseExtractor):
             return items
 
         except Exception:
+            # Fallback: return raw section text as institution only
             return [{
                 "Institution": section.strip(),
                 "Location": "",
