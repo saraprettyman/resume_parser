@@ -35,13 +35,40 @@ def print_section_title(title):
         expand=True
     )
     console.print(panel)
-
 def interactive_cli():
     console.clear()
+
+    # Show banner
     fig = Figlet(font="standard")
     console.print(Align.center(fig.renderText("Resume Lens")), style="bold green")
     console.print("\n")
+    console.print(Panel(
+        Align.center(
+            "[bold cyan]Welcome to Resume Lens![/bold cyan]\n\n"
+            "Analyze resumes for ATS compatibility, skills matching,\n"
+            "and overall profile readiness.\n",
+            vertical="middle"
+        ),
+        style="bold blue",
+        padding=(0, 0)
+    ))
 
+    # Ask for mode first
+    console.print("\n[bold yellow]Please choose an analysis mode:[/bold yellow]")
+    console.print("[cyan]1.[/cyan] Profile / Readability (ATS Profile Check)")
+    console.print("[cyan]2.[/cyan] Skills Analysis\n")
+
+    mode_choice = input("Enter choice (1 or 2) [default: 2]: ").strip() or "2"
+    if mode_choice == "1":
+        mode_choice = "r"
+    elif mode_choice == "2":
+        mode_choice = "s"
+    else:
+        console.print("[red]Invalid choice. Defaulting to Skills Analysis.[/red]")
+        mode_choice = "s"
+
+    # Now ask for the file
+    console.print("\n")
     file_path = prompt("Enter path to resume file", "real_resume_example.pdf")
     console.print("\n")
 
@@ -57,8 +84,6 @@ def interactive_cli():
             f"Please use one of the following: {', '.join(SUPPORTED_EXTENSIONS)}"
         )
         return
-
-    mode_choice = prompt("Choose analysis mode [r: profile/readability, s: skills]", "s").lower()
 
     # Instantiate extractors/checkers
     summary_ex = SummaryExtractor()
@@ -121,9 +146,3 @@ def interactive_cli():
             print_section_title(f"Role-Specific Skills Review: {role_name}")
             extracted = skills_checker.extract_role_skills(file_path, role_name)
             display.display_skills_table(extracted)
-
-    else:
-        console.print("[red]Invalid analysis mode[/red]")
-
-if __name__ == "__main__":
-    interactive_cli()
