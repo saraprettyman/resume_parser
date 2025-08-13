@@ -22,9 +22,10 @@ jobs:
         pip install pytest pytest-cov
 
     - name: Run tests
-      run: PYTHONPATH=${PYTHONPATH}:${{ github.workspace }} pytest tests/ \
-        --doctest-modules \
-        --junitxml=junit/test-results.xml \
-        --cov=resume_parser \
-        --cov-report=xml \
-        --cov-report=html
+      run: |
+        PYTHONPATH=${PYTHONPATH}:${{ github.workspace }} pytest tests/ \
+          --doctest-modules \
+          --junitxml=junit/test-results.xml \
+          --cov=resume_parser \
+          --cov-report=xml \
+          --cov-report=html
