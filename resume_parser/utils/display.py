@@ -6,6 +6,7 @@ of extracted resume data (contact info, skills, experience, education, etc.).
 Uses `rich` to produce nicely formatted tables and panels.
 """
 from typing import Optional
+from venv import logger
 from rich.table import Table
 from rich.panel import Panel
 from rich.align import Align
@@ -42,7 +43,7 @@ class Display:
     # ------------------------
     # Contact Information
     # ------------------------
-    def display_contact(self, contact: dict, full_text: str = ""):
+    def display_contact(self, contact: dict):
         """
         Displays contact details (name, email, phone, LinkedIn, GitHub, etc.) in a table.
 
@@ -79,13 +80,31 @@ class Display:
         table.add_row("👤", "Name", safe_value("name"))
 
         email_val = safe_value("email")
-        table.add_row("✉️", "Email", make_link(f"mailto:{email_val}", email_val) if email_val else "")
+        table.add_row("✉️", "Email",
+                      make_link(f"mailto:{email_val}",
+                                email_val)
+                                if email_val
+                                else ""
+                                )
 
         phone_val = safe_value("phone")
-        table.add_row("📞", "Phone", make_link(f"tel:{phone_val}", phone_val) if phone_val else "")
+        table.add_row("📞", "Phone",
+                      make_link(f"tel:{phone_val}",
+                                phone_val)
+                                if phone_val
+                                else ""
+                                )
 
-        table.add_row("🔗", "LinkedIn", make_link(safe_value("linkedin")) if safe_value("linkedin") else "")
-        table.add_row("💻", "GitHub", make_link(safe_value("github")) if safe_value("github") else "")
+        table.add_row("🔗", "LinkedIn",
+                      make_link(safe_value("linkedin"))
+                      if safe_value("linkedin")
+                      else ""
+                      )
+        table.add_row("💻", "GitHub",
+                      make_link(safe_value("github"))
+                      if safe_value("github")
+                      else ""
+                      )
 
         additional_urls = contact.get("additional_urls", []) or []
         if additional_urls:
@@ -256,8 +275,8 @@ class Display:
                 ])
                 table.add_row(*row)
 
-            except Exception:
-                # Fallback: show raw section if any row fails
+            except (ValueError, TypeError, RuntimeError) as exc:  # noqa: B902
+                logger.exception("Education panel rendering failed: %s", exc)
                 panel = Panel(
                     Align.left(raw_section or "[dim]No education found[/dim]"),
                     title="Education",
@@ -265,5 +284,6 @@ class Display:
                 )
                 console.print(panel)
                 return
+
 
         console.print(table)

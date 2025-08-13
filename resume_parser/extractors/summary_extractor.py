@@ -1,10 +1,18 @@
+"""
+summary_extractor.py
+
+Contains the SummaryExtractor class, which identifies and extracts
+the 'Summary' section from a resume using pre-defined start and end
+regex patterns.
+"""
+
 from resume_parser.extractors.base_extractor import BaseExtractor
 from resume_parser.utils.section_finder import find_section
 from resume_parser.config.patterns import SUMMARY_START, SUMMARY_END
 from resume_parser.utils.file_reader import read_resume
 
 
-class SummaryExtractor(BaseExtractor):
+class SummaryExtractor(BaseExtractor):  # pylint: disable=too-few-public-methods
     """
     Extractor for the 'Summary' section of a resume.
 

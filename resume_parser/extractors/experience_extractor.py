@@ -1,3 +1,12 @@
+"""Experience section extractor for resumes.
+
+This module contains the ExperienceExtractor class, which parses
+the 'Experience' section of resumes in various formats, including:
+- Pipe-delimited headers (Title | Company | Location | Dates)
+- Stacked-line headers (Title \n Company \n Location \n Dates)
+- Mixed formats
+"""
+
 import re
 from resume_parser.extractors.base_extractor import BaseExtractor
 from resume_parser.utils.file_reader import read_resume
@@ -8,7 +17,6 @@ from resume_parser.config.patterns import (
     EXPERIENCE_ENTRY_PATTERN,
     DATE_RANGE_PATTERN,
     EXPERIENCE_LOCATION_PATTERN,
-    MONTH_NAMES_PATTERN,
     EXPERIENCE_PIPE_PATTERN_4,
     EXPERIENCE_PIPE_PATTERN_3
 )
@@ -34,10 +42,16 @@ class ExperienceExtractor(BaseExtractor):
         location_regex = re.compile(EXPERIENCE_LOCATION_PATTERN, re.IGNORECASE)
 
         # --- 1) Try strict pipe-delimited header patterns ---
-        month_pattern = MONTH_NAMES_PATTERN
-
-        pipe_pattern_4 = re.compile(EXPERIENCE_PIPE_PATTERN_4, re.MULTILINE | re.VERBOSE | re.IGNORECASE)
-        pipe_pattern_3 = re.compile(EXPERIENCE_PIPE_PATTERN_3, re.MULTILINE | re.VERBOSE | re.IGNORECASE)
+        pipe_pattern_4 = re.compile(EXPERIENCE_PIPE_PATTERN_4,
+                                    re.MULTILINE |
+                                    re.VERBOSE |
+                                    re.IGNORECASE
+                                    )
+        pipe_pattern_3 = re.compile(EXPERIENCE_PIPE_PATTERN_3,
+                                    re.MULTILINE |
+                                    re.VERBOSE |
+                                    re.IGNORECASE
+                                    )
 
         items = []
         matches = list(pipe_pattern_4.finditer(section_text))
@@ -59,7 +73,11 @@ class ExperienceExtractor(BaseExtractor):
             end = (gd.get("end") or "").strip()
             details_text = (gd.get("details") or "").strip()
 
-            free_lines, bullets = self._extract_details(details_text, date_re, title, company, location_regex)
+            free_lines, bullets = self._extract_details(details_text,
+                                                        date_re,
+                                                        title,
+                                                        company,
+                                                        location_regex)
             free_text = "\n".join(free_lines).strip()
 
             items.append({
@@ -115,3 +133,4 @@ class ExperienceExtractor(BaseExtractor):
             filtered.append(ln)
 
         return self._collect_bullets(filtered)
+    

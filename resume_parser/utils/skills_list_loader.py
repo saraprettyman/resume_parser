@@ -1,3 +1,29 @@
+"""
+skills_list_loader.py
+
+This module provides utility functions for loading the predefined skills dataset
+from a JSON file. The dataset contains both technical skills grouped by category
+and mappings of job roles to relevant skill categories.
+
+Functionality:
+    - Load the complete skills dataset from a JSON file.
+    - Retrieve a list of available roles defined in the dataset.
+
+Typical Usage:
+    from resume_parser.utils.skills_list_loader import load_skills, load_roles
+
+    skills_data = load_skills()
+    roles = load_roles()
+
+Functions:
+    load_skills(file_path: str | None) -> dict:
+        Loads the full skills dataset from the specified JSON file or from the
+        default path if none is provided.
+
+    load_roles(file_path: str | None) -> list[str]:
+        Retrieves a list of role names from the skills dataset.
+"""
+
 import json
 import os
 

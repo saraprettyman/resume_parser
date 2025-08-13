@@ -1,3 +1,10 @@
+"""Extractor for contact details from resumes.
+
+This module defines the ContactExtractor class, which uses
+regex patterns to identify a candidate's name, email, phone,
+and online profiles (LinkedIn, GitHub, etc.).
+"""
+
 import re
 from resume_parser.extractors.base_extractor import BaseExtractor
 from resume_parser.utils.file_reader import read_resume

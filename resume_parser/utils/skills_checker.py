@@ -1,118 +1,95 @@
+"""
+summary_extractor.py
+
+This module defines the SummaryExtractor class, responsible for locating and 
+extracting the "Summary" section from a resume file.
+
+Functionality:
+    - Reads resume content from a file.
+    - Normalizes the text for consistent regex matching.
+    - Searches for the "Summary" section based on configured start and end patterns.
+    - Returns the extracted section as a dictionary.
+
+Classes:
+    SummaryExtractor:
+        Inherits from BaseExtractor and provides the extract() method for 
+        summary section retrieval.
+"""
+
 import re
+from typing import Any, Dict, List, Tuple
+
 from resume_parser.utils.skills_list_loader import load_skills, load_roles
+from resume_parser.utils.file_reader import read_resume
 
 
-class SkillsChecker:
+class SkillsChecker:  # pylint: disable=too-few-public-methods
     """
     A utility class for extracting and matching skills from resume text
     against a predefined skills dataset.
 
-    The skills dataset is expected to be loaded from a JSON file using
-    `load_skills` and structured with two top-level keys:
-      - "ALL_TECHNICAL_SKILLS": Mapping of skill categories to lists of skill definitions.
-      - "ROLES": Mapping of role names to relevant skill categories.
-
-    Typical workflow:
-      1. Load the complete skills dataset upon initialization.
-      2. Extract skills either from all categories (general) or for a specific role.
-      3. Return results showing which skills were found and which were missing.
+    The skills dataset is loaded from JSON using `load_skills` and includes:
+      - "ALL_TECHNICAL_SKILLS": category -> skill definitions
+      - "ROLES": role -> list of categories
     """
 
-    def __init__(self):
-        """
-        Initialize the SkillsChecker by loading the complete skills dataset.
-        """
+    def __init__(self) -> None:
+        """Initialize the SkillsChecker by loading the complete skills dataset."""
         self.skills_data = load_skills()
 
-    def load_roles(self):
+    @staticmethod
+    def load_roles() -> List[str]:
         """
-        Retrieve the list of available roles from the skills dataset.
+        Retrieve the list of available roles.
 
         Returns:
-            list[str]: A list of role names.
+            list[str]: Role names.
         """
         return load_roles()
 
-    def extract_general_skills(self, file_path: str):
+    def extract_general_skills(self, file_path: str) -> Dict[str, Dict[str, List[str]]]:
         """
         Extract all technical skills (across all categories) from a resume.
-
-        Args:
-            file_path (str): Path to the resume file.
-
-        Returns:
-            dict: Mapping of category name to a dictionary with:
-                - "found" (list[str]): Skills found in the resume.
-                - "missing" (list[str]): Skills not found in the resume.
         """
-        from resume_parser.utils.file_reader import read_resume
         resume_text = read_resume(file_path)
         resume_lower = resume_text.lower()
-        extracted = {}
+        extracted: Dict[str, Dict[str, List[str]]] = {}
 
         for category, skills in self.skills_data.get("ALL_TECHNICAL_SKILLS", {}).items():
-            found, missing = self._match_skills(skills, resume_lower, resume_text)
+            found, missing = self._match_skills(skills, resume_lower)
             extracted[category] = {"found": found, "missing": missing}
 
         return extracted
 
-    def extract_role_skills(self, file_path: str, role: str):
+    def extract_role_skills(self, file_path: str, role: str) -> Dict[str, Dict[str, List[str]]]:
         """
         Extract technical skills relevant to a specific role from a resume.
-
-        Args:
-            file_path (str): Path to the resume file.
-            role (str): Role name to extract relevant skills for.
-
-        Returns:
-            dict: Mapping of category name to a dictionary with:
-                - "found" (list[str]): Skills found in the resume.
-                - "missing" (list[str]): Skills not found in the resume.
         """
-        from resume_parser.utils.file_reader import read_resume
         resume_text = read_resume(file_path)
         resume_lower = resume_text.lower()
         role_categories = self.skills_data.get("ROLES", {}).get(role, [])
-        extracted = {}
-        total_skills, matched_skills = 0, 0
+        extracted: Dict[str, Dict[str, List[str]]] = {}
 
         for category in role_categories:
             skills = self.skills_data.get("ALL_TECHNICAL_SKILLS", {}).get(category, [])
-            total_skills += len(skills)
-            found, missing = self._match_skills(skills, resume_lower, resume_text)
-            matched_skills += len(found)
+            found, missing = self._match_skills(skills, resume_lower)
             extracted[category] = {"found": found, "missing": missing}
 
         return extracted
 
-    def _match_skills(self, skills, resume_lower, resume_text):
+    @staticmethod
+    def _match_skills(skills: List[Dict[str, Any]],
+                      resume_lower: str) -> Tuple[List[str], List[str]]:
         """
-        Match a list of skills against the normalized resume text.
-
-        Matching is case-insensitive and uses word boundaries to ensure
-        whole-word matches. Aliases for each skill are also considered.
-
-        Args:
-            skills (list[dict]): List of skill definitions, each containing:
-                - "name" (str): Primary skill name.
-                - "aliases" (list[str], optional): Alternative names for the skill.
-            resume_lower (str): Lowercase version of the resume text.
-            resume_text (str): Original resume text (currently unused, but kept for potential future matching rules).
-
-        Returns:
-            tuple[list[str], list[str]]:
-                - found: Skills matched in the resume.
-                - missing: Skills not found in the resume.
+        Match a list of skills against lowercase resume text.
         """
-        found, missing = [], []
+        found: List[str] = []
+        missing: List[str] = []
         for skill in skills:
-            skill_names = [skill["name"].lower()] + [alias.lower() for alias in skill.get("aliases", [])]
-            matched = False
-            for s in skill_names:
-                if re.search(rf"\b{re.escape(s)}\b", resume_lower):
-                    found.append(skill["name"])
-                    matched = True
-                    break
-            if not matched:
+            skill_names = ([skill["name"].lower()]
+                           + [alias.lower() for alias in skill.get("aliases", [])])
+            if any(re.search(rf"\b{re.escape(name)}\b", resume_lower) for name in skill_names):
+                found.append(skill["name"])
+            else:
                 missing.append(skill["name"])
         return found, missing

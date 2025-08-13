@@ -1,6 +1,4 @@
-# config/patterns.py
-# Common regex patterns and section keywords
-import re
+"""Regex patterns and section keywords for resume parsing."""
 
 # --------------------------
 # Contact patterns (tight global coverage)
@@ -9,7 +7,7 @@ NAME_PATTERN = (
     r"^(?!.*@)(?!.*\d)"                                     # no emails or digits
     r"((?:[A-ZÀ-Ý][A-Za-zÀ-ÿ'’\-]+|[A-Z]{2,})"              # first name: titlecase or ALL CAPS
     r"(?:\s+(?:[A-ZÀ-Ý][A-Za-zÀ-ÿ'’\-]+|[A-Z]{2,}"          # next: titlecase or ALL CAPS
-    r"|(?:[a-z]{1,3}(?=\s+[A-ZÀ-Ý])))"                      # lowercase particles only if followed by capitalized
+    r"|(?:[a-z]{1,3}(?=\s+[A-ZÀ-Ý])))"                      # lowercase particles
     r"){1,4})"
 )
 
@@ -27,11 +25,13 @@ PHONE_PATTERN = (
 )
 
 LINKEDIN_PATTERN = (
-    r"(?:https?://)?(?:[a-z]{2,3}\.)?linkedin\.com/(?:in|pub)/[A-Za-z0-9_.\-]+/?(?:\?[^\s]*)?"
+    r"(?:https?://)?(?:[a-z]{2,3}\.)?"
+    r"linkedin\.com/(?:in|pub)/[A-Za-z0-9_.\-]+/?(?:\?[^\s]*)?"
 )
 
 GITHUB_PATTERN = (
-    r"(?:https?://)?(?:www\.)?github\.com/[A-Za-z0-9._\-]+/?"
+    r"(?:https?://)?(?:www\.)?"
+    r"github\.com/[A-Za-z0-9._\-]+/?"
 )
 
 URL_PATTERN = (
@@ -44,14 +44,14 @@ URL_PATTERN = (
 EDU_START = [
     r"\beducation\b",
     r"academic\s+(background|history)",
-    r"training\s+and\s+education"
+    r"training\s+and\s+education",
 ]
 EDU_END = [
     r"\bexperience\b",
     r"work\s+history",
     r"skills",
     r"certifications?",
-    r"projects?"
+    r"projects?",
 ]
 DATE_RANGE = (
     r"(?:"
@@ -69,11 +69,23 @@ DATE_RANGE = (
     r"|Present"
     r")"
 )
-GPA_PATTERN = r"(?:GPA|G\.P\.A)\s*[:\s]?\s*([0-4](?:[.,]\d{1,2})?)(?:\s*/\s*([0-4](?:[.,]\d{1,2})?))?"
-DEGREE_KEYWORD_PATTERN = r"\b(?:Bachelor(?:'s)?|Master(?:'s)?|Associate(?:'s)?|Doctor(?:ate)?|B\.S\.|BSc|BS|M\.S\.|MS|Ph\.D\.|PhD)\b"
-PROJECTS_PATTERN = r"(?:Relevant Projects?|Projects?)\s*[:\-–]?\s*((?:.*?)(?=(?:\n\s*\n|$)))"
+GPA_PATTERN = (
+    r"(?:GPA|G\.P\.A)\s*[:\s]?\s*([0-4](?:[.,]\d{1,2})?)"
+    r"(?:\s*/\s*([0-4](?:[.,]\d{1,2})?))?"
+)
+DEGREE_KEYWORD_PATTERN = (
+    r"\b(?:Bachelor(?:'s)?|Master(?:'s)?|Associate(?:'s)?|Doctor(?:ate)?|"
+    r"B\.S\.|BSc|BS|M\.S\.|MS|Ph\.D\.|PhD)\b"
+)
+PROJECTS_PATTERN = (
+    r"(?:Relevant Projects?|Projects?)\s*[:\-–]?"
+    r"\s*((?:.*?)(?=(?:\n\s*\n|$)))"
+)
 MINORS_PATTERN = r"Minors?\s*[:\-–]?\s*([^\n|]+)"
-SCHOLARSHIPS_PATTERN = r"(?:Scholarships?|Awards?)\s*[:\-–]?\s*((?:.*?)(?=(?:\n\s*\n|$)))"
+SCHOLARSHIPS_PATTERN = (
+    r"(?:Scholarships?|Awards?)\s*[:\-–]?"
+    r"\s*((?:.*?)(?=(?:\n\s*\n|$)))"
+)
 LOCATION_PATTERN = (
     r"\b("
     r"(?:[A-Za-z][A-Za-z .'\-]+,\s*(?:[A-Z]{2}|[A-Za-z][A-Za-z .'\-]+))"
@@ -88,9 +100,8 @@ DEGREE_TERM_BLOCKLIST = {
     "intelligence", "analytics",
     "electrical", "mechanical", "civil",
     "physics", "chemistry", "biology", "biological",
-    "computational"
+    "computational",
 }
-
 
 # --------------------------
 # Experience patterns
@@ -99,7 +110,7 @@ EXP_START = [
     r"professional\s+experience",
     r"experience",
     r"work\s+history",
-    r"employment(?:\s+history)?"
+    r"employment(?:\s+history)?",
 ]
 
 EXP_END = [
@@ -107,16 +118,21 @@ EXP_END = [
     r"skills",
     r"certifications",
     r"projects",
-    r"additional\s+information"
+    r"additional\s+information",
 ]
 MONTH_NAMES_PATTERN = (
     r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|"
     r"Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
 )
-DATE_TOKEN_PATTERN = rf"(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|\d{{4}})"
-DATE_RANGE_PATTERN = rf"({DATE_TOKEN_PATTERN})\s*(?:-|–|to|—)\s*(Present|present|{DATE_TOKEN_PATTERN})"
+DATE_TOKEN_PATTERN = (
+    rf"(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|\d{{4}})"
+)
+DATE_RANGE_PATTERN = (
+    rf"({DATE_TOKEN_PATTERN})\s*(?:-|–|to|—)\s*"
+    rf"(Present|present|{DATE_TOKEN_PATTERN})"
+)
 EXPERIENCE_LOCATION_PATTERN = (
-    r"^(?:[A-Za-z][A-Za-z .'\-]+,\s*(?:[A-Z]{2}|\d{{4,5}}|[A-Za-z][A-Za-z .'\-]+))$"
+    r"^(?:[A-Za-z][A-Za-z .'\-]+,\s*(?:[A-Z]{2}|\d{4,5}|[A-Za-z][A-Za-z .'\-]+))$"
     r"|^(?:Remote|Hybrid|On[- ]?site|WFH|Work\s*From\s*Home)$"
 )
 EXPERIENCE_ENTRY_PATTERN = rf"""
@@ -142,7 +158,6 @@ EXPERIENCE_ENTRY_PATTERN = rf"""
 """
 
 # Pipe-delimited experience patterns
-
 EXPERIENCE_PIPE_PATTERN_4 = rf"""
 ^
 (?P<title>[^|\n]+?)\s*\|\s*
@@ -162,10 +177,18 @@ EXPERIENCE_PIPE_PATTERN_3 = rf"""
 (?:\n(?P<details>(?:.+\n?)*))?
 """
 
-
-
 # --------------------------
 # Summary patterns
 # --------------------------
-SUMMARY_START = [r"professional\s+summary", r"summary", r"profile", r"objective"]
-SUMMARY_END = [r"experience", r"work\s+history", r"skills", r"education"]
+SUMMARY_START = [
+    r"professional\s+summary",
+    r"summary",
+    r"profile",
+    r"objective",
+]
+SUMMARY_END = [
+    r"experience",
+    r"work\s+history",
+    r"skills",
+    r"education",
+]

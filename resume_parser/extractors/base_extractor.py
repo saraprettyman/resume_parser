@@ -1,4 +1,9 @@
-# extractors/base_extractor.py
+"""Base extractor class for resume parsing.
+
+Defines the abstract interface and common normalization logic
+that all resume data extractors should implement.
+"""
+
 from abc import ABC, abstractmethod
 from resume_parser.utils.text_normalizer import normalize_whitespace
 

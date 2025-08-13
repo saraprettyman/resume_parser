@@ -1,5 +1,17 @@
-import re
+"""
+text_normalizer.py
 
+Provides utilities for normalizing text whitespace and line breaks.
+
+The primary function in this module ensures that text is cleaned of inconsistent
+spacing, excess blank lines, and platform-specific newline styles. This is
+especially useful when processing resumes or other structured documents where
+consistent formatting is critical for parsing.
+
+Functions:
+    normalize_whitespace(text: str) -> str:
+        Cleans and standardizes whitespace in the input text.
+"""
 def normalize_whitespace(text: str) -> str:
     """
     Normalize whitespace and line breaks in the given text.

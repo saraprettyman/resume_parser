@@ -1,6 +1,12 @@
-# extractors/education_extractor.py
+"""Extractor for structured education history from resumes.
+
+Parses the 'Education' section of a resume into structured fields like
+institution, location, graduation date, degree, emphasis, GPA, minors,
+and additional details.
+"""
 import re
 from typing import Optional
+from venv import logger
 from resume_parser.extractors.base_extractor import BaseExtractor
 from resume_parser.utils.file_reader import read_resume
 from resume_parser.utils.section_finder import find_section
@@ -8,7 +14,7 @@ from resume_parser.config.patterns import (
     EDU_START, EDU_END, DATE_RANGE, GPA_PATTERN,
     DEGREE_KEYWORD_PATTERN, PROJECTS_PATTERN, MINORS_PATTERN,
     SCHOLARSHIPS_PATTERN, LOCATION_PATTERN, DEGREE_TERM_BLOCKLIST
-) 
+)
 
 class EducationExtractor(BaseExtractor):
     """
@@ -110,7 +116,10 @@ class EducationExtractor(BaseExtractor):
                         location = cand
                         break
             if not location:  # Secondary check inside degree lines
-                degree_line_candidate = next((ln for ln in lines if re.search(DEGREE_KEYWORD_PATTERN, ln, re.IGNORECASE)), None)
+                degree_line_candidate = next(
+                    (ln for ln in lines if re.search(DEGREE_KEYWORD_PATTERN, ln, re.IGNORECASE)),
+                    None
+                )
                 if degree_line_candidate:
                     loc_match = re.search(LOCATION_PATTERN, degree_line_candidate, re.IGNORECASE)
                     if loc_match:
@@ -119,9 +128,19 @@ class EducationExtractor(BaseExtractor):
                             location = cand
 
             # Institution
-            GPA_RE = re.compile(GPA_PATTERN, re.IGNORECASE)
+            gpa_re = re.compile(
+                GPA_PATTERN,
+                re.IGNORECASE
+            )
             institution_line = next(
-                (ln for ln in lines if not (GPA_RE.search(ln) or re.search(MINORS_PATTERN, ln, re.IGNORECASE) or "project" in ln.lower())),
+                (ln for ln in lines if not (
+                    gpa_re.search(ln) or
+                    re.search(MINORS_PATTERN,
+                              ln, re.IGNORECASE
+                              ) or
+                              "project" in ln.lower()
+                              )
+                              ),
                 ""
             ).strip(" |,;-")
             if grad_date:
@@ -131,13 +150,33 @@ class EducationExtractor(BaseExtractor):
             institution = institution_line
 
             # Degree & Emphasis
-            degree_idx = next((i for i, ln in enumerate(lines) if re.search(DEGREE_KEYWORD_PATTERN, ln, re.IGNORECASE)), None)
-            degree_line = lines[degree_idx] if degree_idx is not None else (lines[1] if len(lines) > 1 else lines[0])
+            degree_idx = next(
+                (i for i,
+                 ln in enumerate(lines)
+                 if re.search(DEGREE_KEYWORD_PATTERN,
+                              ln, re.IGNORECASE)
+                              ), None
+                              )
+            degree_line = (lines[degree_idx]
+                           if degree_idx is not None
+                           else (lines[1]
+                                 if len(lines) > 1
+                                 else lines[0]
+                                 )
+                                 )
             if location:
                 degree_line = degree_line.replace(location, "").strip(",;:- ")
 
             degree_match = re.search(
-                r"(?P<degree>(?:Bachelor(?:'s)?[^:,\n]*|Master(?:'s)?[^:,\n]*|Associate(?:'s)?[^:,\n]*|Doctor(?:ate)?[^:,\n]*|B\.S\.[^:,\n]*|M\.S\.[^:,\n]*|Ph\.?D[^:,\n]*))",
+                r"(?P<degree>("
+                r"?:Bachelor(?:'s)?[^:,\n]*|"
+                r"Master(?:'s)?[^:,\n]*|"
+                r"Associate(?:'s)?[^:,\n]*|"
+                r"Doctor(?:ate)?[^:,\n]*|"
+                r"B\.S\.[^:,\n]*|"
+                r"M\.S\.[^:,\n]*|"
+                r"Ph\.?D[^:,\n]*"
+                r"))",
                 degree_line,
                 re.IGNORECASE,
             )
@@ -150,7 +189,7 @@ class EducationExtractor(BaseExtractor):
 
             # GPA
             gpa_val = ""
-            gpa_m = GPA_RE.search(text)
+            gpa_m = gpa_re.search(text)
             if gpa_m:
                 gpa_val = f"{gpa_m.group(1)}/{gpa_m.group(2)}" if gpa_m.group(2) else gpa_m.group(1)
 
@@ -182,7 +221,11 @@ class EducationExtractor(BaseExtractor):
             for ln in lines:
                 if not ln or ln.strip() in used_lines:
                     continue
-                if re.search(PROJECTS_PATTERN, ln, re.IGNORECASE) or re.search(SCHOLARSHIPS_PATTERN, ln, re.IGNORECASE):
+                if (
+                    re.search(PROJECTS_PATTERN, ln, re.IGNORECASE)
+                    or re.search(SCHOLARSHIPS_PATTERN, ln, re.IGNORECASE)
+                ):
+
                     continue
                 details_parts.append(ln.strip())
 
@@ -205,8 +248,8 @@ class EducationExtractor(BaseExtractor):
             })
             return items
 
-        except Exception:
-            # Fallback: return raw section text as institution only
+        except Exception:  # pylint: disable=broad-exception-caught
+            logger.exception("Education parsing failed")
             return [{
                 "Institution": section.strip(),
                 "Location": "",

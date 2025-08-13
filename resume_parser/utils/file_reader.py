@@ -1,7 +1,8 @@
 """
 file_reader.py
 
-Utility functions for reading resumes from various file formats (.pdf, .docx, .doc, .rtf, .odt, .md, .html, .txt).
+Utility functions for reading resumes from various file formats 
+(.pdf, .docx, .doc, .rtf, .odt, .md, .html, .txt).
 Supports both text-based extraction and OCR fallback for scanned PDFs.
 """
 
@@ -12,7 +13,6 @@ import mammoth
 import pypandoc
 from pdf2image import convert_from_path
 import pytesseract
-from typing import Optional
 
 
 def read_pdf(file_path: str) -> str:
