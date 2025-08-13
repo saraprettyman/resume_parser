@@ -1,18 +1,31 @@
 name: resume-parser
 channels:
   - conda-forge
-  - defaults
 dependencies:
+  # Match your CI Python version
   - python=3.10
+  
+  # CLI / output formatting
   - rich
   - pyfiglet
-  - pytest
+  
+  # Document parsing
   - python-docx
   - pdfplumber
+  
+  # NLP / ML
   - spacy
-  - pandas
-  - tabulate
   - nltk
   - scikit-learn
+  
+  # Data handling
+  - pandas
   - openpyxl
+  - tabulate
+  
+  # Testing
+  - pytest
+  - pytest-cov
+  
+  # Needed for editable installs in CI
   - pip
