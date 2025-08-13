@@ -1,0 +1,19 @@
+Harry Potter
+Email: harry.potter@hogwarts.com
+Phone: +1 555-111-2222
+LinkedIn: linkedin.com/in/harrypotter
+GitHub: github.com/hpotter
+
+Education
+Hogwarts School of Witchcraft and Wizardry — Bachelor of Science in Magical Computing, 2015–2018
+
+Experience
+Auror Jan 2019 – Present
+Ministry of Magic
+London, UK
+- Developed automation scripts in Python for spell registry.
+- Migrated magical archives to AWS cloud storage.
+- Led Machine Learning project to predict Dark Arts activity.
+
+Skills
+Python, AWS, Machine Learning, Defence Against the Dark Arts

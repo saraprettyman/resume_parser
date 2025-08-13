@@ -161,7 +161,8 @@
       { "name": "Jupyter Notebook", "aliases": ["Jupyter"] },
       { "name": "Data Mining", "aliases": [] },
       { "name": "Data Visualization", "aliases": [] },
-      { "name": "Model Content Protocol", "aliases": ["MCP"] }
+      { "name": "Model Content Protocol", "aliases": ["MCP"] },
+      { "name": "Machine Learning", "aliases": ["ML"] }
     ],
     "Software Practices": [
       { "name": "Agile", "aliases": ["Agile Methodology"] },

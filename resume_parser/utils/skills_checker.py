@@ -1,5 +1,5 @@
 import re
-from utils.skills_list_loader import load_skills, load_roles
+from resume_parser.utils.skills_list_loader import load_skills, load_roles
 
 
 class SkillsChecker:
@@ -45,7 +45,7 @@ class SkillsChecker:
                 - "found" (list[str]): Skills found in the resume.
                 - "missing" (list[str]): Skills not found in the resume.
         """
-        from utils.file_reader import read_resume
+        from resume_parser.utils.file_reader import read_resume
         resume_text = read_resume(file_path)
         resume_lower = resume_text.lower()
         extracted = {}
@@ -69,7 +69,7 @@ class SkillsChecker:
                 - "found" (list[str]): Skills found in the resume.
                 - "missing" (list[str]): Skills not found in the resume.
         """
-        from utils.file_reader import read_resume
+        from resume_parser.utils.file_reader import read_resume
         resume_text = read_resume(file_path)
         resume_lower = resume_text.lower()
         role_categories = self.skills_data.get("ROLES", {}).get(role, [])

@@ -1,7 +1,7 @@
-from .base_extractor import BaseExtractor
-from utils.section_finder import find_section
-from config.patterns import SUMMARY_START, SUMMARY_END
-from utils.file_reader import read_resume
+from resume_parser.extractors.base_extractor import BaseExtractor
+from resume_parser.utils.section_finder import find_section
+from resume_parser.config.patterns import SUMMARY_START, SUMMARY_END
+from resume_parser.utils.file_reader import read_resume
 
 
 class SummaryExtractor(BaseExtractor):

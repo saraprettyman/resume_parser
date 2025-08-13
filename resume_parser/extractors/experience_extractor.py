@@ -1,66 +1,63 @@
 import re
-from .base_extractor import BaseExtractor
-from utils.file_reader import read_resume
-from utils.section_finder import find_section
-from config.patterns import (
+from resume_parser.extractors.base_extractor import BaseExtractor
+from resume_parser.utils.file_reader import read_resume
+from resume_parser.utils.section_finder import find_section
+from resume_parser.config.patterns import (
     EXP_START,
     EXP_END,
     EXPERIENCE_ENTRY_PATTERN,
     DATE_RANGE_PATTERN,
-    EXPERIENCE_LOCATION_PATTERN
+    EXPERIENCE_LOCATION_PATTERN,
+    MONTH_NAMES_PATTERN,
+    EXPERIENCE_PIPE_PATTERN_4,
+    EXPERIENCE_PIPE_PATTERN_3
 )
 
 
 class ExperienceExtractor(BaseExtractor):
     """
-    Extractor for the 'Experience' section of a resume.
-
-    This extractor:
-        - Identifies the experience section based on start/end patterns.
-        - Parses individual experience entries (job title, company, dates, location).
-        - Extracts both free-text descriptions and bullet points for each job.
-
-    Inherits:
-        BaseExtractor: Provides normalization and shared extraction utilities.
+    Hybrid extractor for the 'Experience' section of a resume.
+    Handles:
+      - Pipe-delimited headers (Title | Company | Location | Dates)
+      - Stacked-line headers (Title \n Company \n Location \n Dates)
+      - Mixed formats
     """
 
     def extract(self, file_path: str) -> dict:
-        """
-        Extract structured experience information from a resume.
-
-        Args:
-            file_path (str): Path to the resume file.
-
-        Returns:
-            dict: A dictionary containing:
-                - "section" (str): Raw extracted experience section text.
-                - "items" (list[dict]): List of extracted experience entries, each with:
-                    - Job Title (str)
-                    - Company (str)
-                    - Location (str)
-                    - Start Date (str)
-                    - End Date (str)
-                    - Details (str): Free text (non-bulleted) description.
-                    - Bullets (list[str]): Bullet point descriptions.
-        """
         text = self.normalize(read_resume(file_path))
         section_text = find_section(text, EXP_START, EXP_END)
 
         if not section_text:
             return {"section": "", "items": []}
 
-        entry_pattern = re.compile(EXPERIENCE_ENTRY_PATTERN, re.MULTILINE | re.VERBOSE)
         date_re = re.compile(DATE_RANGE_PATTERN, flags=re.IGNORECASE)
         location_regex = re.compile(EXPERIENCE_LOCATION_PATTERN, re.IGNORECASE)
 
+        # --- 1) Try strict pipe-delimited header patterns ---
+        month_pattern = MONTH_NAMES_PATTERN
+
+        pipe_pattern_4 = re.compile(EXPERIENCE_PIPE_PATTERN_4, re.MULTILINE | re.VERBOSE | re.IGNORECASE)
+        pipe_pattern_3 = re.compile(EXPERIENCE_PIPE_PATTERN_3, re.MULTILINE | re.VERBOSE | re.IGNORECASE)
+
         items = []
-        for match in entry_pattern.finditer(section_text):
-            title = match.group("title").strip()
-            company = match.group("company").strip()
-            location = (match.group("location") or "").strip()
-            start = match.group("start").strip()
-            end = match.group("end").strip()
-            details_text = (match.group("details") or "").strip()
+        matches = list(pipe_pattern_4.finditer(section_text))
+
+        if not matches:
+            matches = list(pipe_pattern_3.finditer(section_text))
+
+        if not matches:
+            # --- 2) Fallback: standard multi-line header detection ---
+            entry_pattern = re.compile(EXPERIENCE_ENTRY_PATTERN, re.MULTILINE | re.VERBOSE)
+            matches = list(entry_pattern.finditer(section_text))
+
+        for match in matches:
+            gd = match.groupdict()
+            title = (gd.get("title") or "").strip()
+            company = (gd.get("company") or "").strip()
+            location = (gd.get("location") or "").strip()
+            start = (gd.get("start") or "").strip()
+            end = (gd.get("end") or "").strip()
+            details_text = (gd.get("details") or "").strip()
 
             free_lines, bullets = self._extract_details(details_text, date_re, title, company, location_regex)
             free_text = "\n".join(free_lines).strip()
@@ -75,37 +72,24 @@ class ExperienceExtractor(BaseExtractor):
                 "Bullets": bullets
             })
 
+
         return {"section": section_text, "items": items}
 
     def _collect_bullets(self, lines):
-        """
-        Separate bullet points from free text lines.
-
-        Args:
-            lines (list[str]): Lines of text from an experience entry.
-
-        Returns:
-            tuple[list[str], list[str]]:
-                - Free text lines (non-bulleted content).
-                - Bullet point lines (stripped of bullet characters).
-        """
         bullets = []
         free_lines = []
         for ln in lines:
             s = ln.strip()
             if not s:
                 continue
-            # Match standard bullet markers
             if re.match(r'^[\u2022\-\*\•]\s*', s):
                 content = re.sub(r'^[\u2022\-\*\•\s]{1,4}', '', s).strip()
                 if content:
                     bullets.append(content)
-            # Handle inline bullets separated by •
             elif "•" in s:
                 parts = [p.strip() for p in s.split("•") if p.strip()]
                 bullets.extend(parts)
             else:
-                # Continuation of previous bullet or free text
                 if bullets:
                     bullets[-1] += " " + s
                 else:
@@ -113,26 +97,6 @@ class ExperienceExtractor(BaseExtractor):
         return free_lines, bullets
 
     def _extract_details(self, details_region, date_re, job_title, company, location_regex):
-        """
-        Clean and filter detail lines for an experience entry.
-
-        Removes:
-            - Lines matching job title or company name
-            - Lines containing date patterns
-            - Lines matching a location format
-
-        Args:
-            details_region (str): Raw details text from a job entry.
-            date_re (Pattern): Compiled regex for detecting dates.
-            job_title (str): Job title for the entry.
-            company (str): Company name for the entry.
-            location_regex (Pattern): Compiled regex for detecting locations.
-
-        Returns:
-            tuple[list[str], list[str]]:
-                - Free text lines.
-                - Bullet point lines.
-        """
         if not details_region:
             return [], []
 

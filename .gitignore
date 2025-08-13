@@ -1,21 +1,23 @@
-# Byte-compiled / cache files
+cat > .gitignore << 'EOF'
 __pycache__/
 *.py[cod]
-*.log
-
-# Environments
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage*
+.hypothesis/
+build/
+dist/
+*.egg-info/
 .env
-.venv/
+.venv
 env/
 venv/
-
-# OS files
 .DS_Store
 Thumbs.db
-
-# Editors
-.vscode/
 .idea/
-
-# Temporary files
-*.tmp
+.vscode/
+*.log
+.ipynb_checkpoints/
+EOF

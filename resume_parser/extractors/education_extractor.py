@@ -1,14 +1,14 @@
 # extractors/education_extractor.py
 import re
-from .base_extractor import BaseExtractor
-from utils.file_reader import read_resume
-from utils.section_finder import find_section
-from config.patterns import (
+from typing import Optional
+from resume_parser.extractors.base_extractor import BaseExtractor
+from resume_parser.utils.file_reader import read_resume
+from resume_parser.utils.section_finder import find_section
+from resume_parser.config.patterns import (
     EDU_START, EDU_END, DATE_RANGE, GPA_PATTERN,
     DEGREE_KEYWORD_PATTERN, PROJECTS_PATTERN, MINORS_PATTERN,
     SCHOLARSHIPS_PATTERN, LOCATION_PATTERN, DEGREE_TERM_BLOCKLIST
-)
-
+) 
 
 class EducationExtractor(BaseExtractor):
     """
@@ -41,7 +41,7 @@ class EducationExtractor(BaseExtractor):
         items = self.parse_education(section)
         return {"section": section, "items": items}
 
-    def _sanitize_location_candidate(self, cand: str) -> str | None:
+    def _sanitize_location_candidate(self, cand: str) -> Optional[str]:
         """
         Clean up and validate a potential location string.
         
@@ -171,16 +171,23 @@ class EducationExtractor(BaseExtractor):
             if scholarships_m:
                 details_parts.append(re.sub(r"\s*\n\s*", "; ", scholarships_m.group(1).strip()))
 
-            # Remaining lines that are not already used
-            used_chunks = {institution, degree_line, location, gpa_val, minors_val}
+            # Remaining lines that aren't already used
+            used_lines = {
+                institution.strip(),
+                degree_line.strip(),
+                location.strip(),
+                gpa_val.strip(),
+                minors_val.strip(),
+            }
             for ln in lines:
-                if any(val and val in ln for val in used_chunks):
+                if not ln or ln.strip() in used_lines:
                     continue
                 if re.search(PROJECTS_PATTERN, ln, re.IGNORECASE) or re.search(SCHOLARSHIPS_PATTERN, ln, re.IGNORECASE):
                     continue
-                details_parts.append(ln)
+                details_parts.append(ln.strip())
 
             details_val = "; ".join(p for p in details_parts if p)
+
 
             # Final degree + emphasis
             degree_emphasis = degree

@@ -8,7 +8,7 @@ and filtering URLs.
 
 import re
 from typing import List, Optional
-from config.patterns import URL_PATTERN
+from resume_parser.config.patterns import URL_PATTERN
 
 
 def find_first(pattern: str, text: str, flags: int = re.IGNORECASE) -> Optional[str]:

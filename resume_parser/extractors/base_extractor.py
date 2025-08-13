@@ -1,6 +1,6 @@
 # extractors/base_extractor.py
 from abc import ABC, abstractmethod
-from utils.text_normalizer import normalize_whitespace
+from resume_parser.utils.text_normalizer import normalize_whitespace
 
 class BaseExtractor(ABC):
     """

@@ -19,9 +19,11 @@ def load_skills(file_path=None):
             - "ROLES" (dict[str, list[str]]):
                 Mapping of role names to relevant skill categories.
     """
+
     if file_path is None:
-        base_dir = os.path.dirname(__file__)
-        file_path = os.path.join("data", "skills_master.json")
+        base_dir = os.path.dirname(os.path.dirname(__file__))  # up from utils/
+        file_path = os.path.join(base_dir, "data", "skills_master.json")
+
         file_path = os.path.abspath(file_path)
     with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)

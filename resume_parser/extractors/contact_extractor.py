@@ -1,8 +1,8 @@
 import re
-from .base_extractor import BaseExtractor
-from utils.file_reader import read_resume
-from utils.regex_helpers import find_first, find_additional_urls
-from config.patterns import (
+from resume_parser.extractors.base_extractor import BaseExtractor
+from resume_parser.utils.file_reader import read_resume
+from resume_parser.utils.regex_helpers import find_first, find_additional_urls
+from resume_parser.config.patterns import (
     NAME_PATTERN, EMAIL_PATTERN, PHONE_PATTERN,
     LINKEDIN_PATTERN, GITHUB_PATTERN
 )

@@ -1,50 +1,36 @@
-"""
-cli.py
-
-Interactive command-line interface for Resume Lens.
-
-Provides a menu-driven CLI for:
-1. ATS Profile / Readability Checks
-2. Skills Analysis (General or Role-Specific)
-
-Author: [Sara Prettyman]
-"""
-
+import argparse
+from pathlib import Path
 from rich.console import Console
 from rich.text import Text
 from rich.panel import Panel
 from rich.align import Align
 from pyfiglet import Figlet
-from pathlib import Path
 
 from extractors.summary_extractor import SummaryExtractor
 from extractors.contact_extractor import ContactExtractor
 from extractors.experience_extractor import ExperienceExtractor
 from extractors.education_extractor import EducationExtractor
-from utils.skills_checker import SkillsChecker
-from utils.display import Display
+from resume_parser.utils.skills_checker import SkillsChecker
+from resume_parser.utils.display import Display
 
 # Console renderer and display helper
 console = Console()
 display = Display()
 
-# Supported file formats
 SUPPORTED_EXTENSIONS = {
     ".pdf", ".docx", ".doc", ".txt", ".rtf", ".odt", ".md", ".html", ".htm"
 }
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="Resume Lens CLI")
+    parser.add_argument("--mode", choices=["profile", "skills"], help="Mode to run")
+    parser.add_argument("--sub-mode", choices=["general", "role"], help="Skills sub-mode")
+    parser.add_argument("--file", help="Path to resume file")
+    return parser.parse_args()
+
+
 def prompt(question: str, default: str = None) -> str:
-    """
-    Prompt the user for input with an optional default value.
-
-    Args:
-        question (str): Prompt text to display.
-        default (str, optional): Default value to return if no input is provided.
-
-    Returns:
-        str: User input or the default value.
-    """
     q_text = Text(question, style="bold cyan")
     if default:
         q_text.append(f" ({default})", style="dim")
@@ -53,12 +39,6 @@ def prompt(question: str, default: str = None) -> str:
 
 
 def print_section_title(title: str) -> None:
-    """
-    Print a visually distinct section title.
-
-    Args:
-        title (str): The title text to display.
-    """
     panel = Panel(
         Align.center(f"[bold white]{title}[/bold white]", vertical="middle"),
         style="bold blue",
@@ -68,40 +48,7 @@ def print_section_title(title: str) -> None:
     console.print(panel)
 
 
-def interactive_cli() -> None:
-    """
-    Run the interactive CLI for Resume Lens.
-
-    This function:
-    - Displays the main menu
-    - Prompts for resume file input
-    - Runs either ATS Profile Check or Skills Analysis
-    """
-    console.clear()
-    fig = Figlet(font="standard")
-    console.print(Align.center(fig.renderText("Resume Lens")), style="bold green")
-    console.print("\n")
-
-    # Main menu
-    console.print("[bold cyan]Select an option:[/bold cyan]")
-    console.print(" [green]1[/green]. Profile / Readability Check")
-    console.print(" [green]2[/green]. Skills Analysis")
-
-    mode_choice = prompt("Enter choice", "1").lower()
-
-    # Skills sub-menu
-    sub_mode = None
-    if mode_choice in {"2", "skills"}:
-        console.print("\n[bold cyan]Select skills analysis mode:[/bold cyan]")
-        console.print(" [green]g[/green]. General")
-        console.print(" [green]r[/green]. Role-specific\n")
-        sub_mode = prompt("Enter choice", "g").lower()
-
-    # Resume file input
-    console.print("\n")
-    file_path = prompt("Enter path to resume file", "real_resume_example.pdf")
-    console.print("\n")
-
+def run_cli(mode_choice: str, sub_mode: str, file_path: str):
     file_path_obj = Path(file_path)
     ext = file_path_obj.suffix.lower()
 
@@ -123,10 +70,8 @@ def interactive_cli() -> None:
     edu_ex = EducationExtractor()
     skills_checker = SkillsChecker()
 
-    console.print("\n")
-
     # Mode: ATS Profile Check
-    if mode_choice in {"1", "r", "readability", "profile"}:
+    if mode_choice == "profile":
         console.clear()
         print_section_title("ATS Profile Check")
 
@@ -146,14 +91,14 @@ def interactive_cli() -> None:
         display.display_experience(exp_res)
 
     # Mode: Skills Analysis
-    elif mode_choice in {"2", "s", "skills"}:
-        if sub_mode in {"g", "general"}:
+    elif mode_choice == "skills":
+        if sub_mode == "general":
             console.clear()
             print_section_title("General Skills Review")
             extracted = skills_checker.extract_general_skills(file_path)
             display.display_skills_table(extracted, title="")
 
-        elif sub_mode in {"r", "role"}:
+        elif sub_mode == "role":
             console.clear()
             roles = skills_checker.load_roles()
             if not roles:
@@ -179,3 +124,40 @@ def interactive_cli() -> None:
             print_section_title(f"Role-Specific Skills Review: {role_name}")
             extracted = skills_checker.extract_role_skills(file_path, role_name)
             display.display_skills_table(extracted)
+
+
+def interactive_cli():
+    console.clear()
+    fig = Figlet(font="standard")
+    console.print(Align.center(fig.renderText("Resume Lens")), style="bold green")
+    console.print("\n")
+
+    console.print("[bold cyan]Select an option:[/bold cyan]")
+    console.print(" [green]1[/green]. Profile / Readability Check")
+    console.print(" [green]2[/green]. Skills Analysis")
+
+    mode_choice = prompt("Enter choice", "1").lower()
+    mode_choice = "profile" if mode_choice in {"1", "r", "readability", "profile"} else "skills"
+
+    sub_mode = None
+    if mode_choice == "skills":
+        console.print("\n[bold cyan]Select skills analysis mode:[/bold cyan]")
+        console.print(" [green]g[/green]. General")
+        console.print(" [green]r[/green]. Role-specific\n")
+        sub_mode_choice = prompt("Enter choice", "g").lower()
+        sub_mode = "general" if sub_mode_choice in {"g", "general"} else "role"
+
+    file_path = prompt("Enter path to resume file", "real_resume_example.pdf")
+    run_cli(mode_choice, sub_mode, file_path)
+
+
+def main():
+    args = parse_args()
+    if args.mode and args.file:
+        run_cli(args.mode, args.sub_mode, args.file)
+    else:
+        interactive_cli()
+
+
+if __name__ == "__main__":
+    main()

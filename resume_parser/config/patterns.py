@@ -3,14 +3,40 @@
 import re
 
 # --------------------------
-# Contact patterns
+# Contact patterns (tight global coverage)
 # --------------------------
-NAME_PATTERN = r"^(?!.*@)(?!.*\d)([A-Z][A-Za-z]+(?:\s+[A-Z][A-Za-z]+){1,3})$"
-EMAIL_PATTERN = r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+"
-PHONE_PATTERN = r"(?:\+?\d{1,3}[\s.-]?)?\(?\d{2,4}\)?[\s.-]?\d{3,4}[\s.-]?\d{3,4}"
-LINKEDIN_PATTERN = r"(?:https?://)?(?:www\.)?linkedin\.com/in/[a-zA-Z0-9_-]+"
-GITHUB_PATTERN = r"(?:https?://)?(?:www\.)?github\.com/[a-zA-Z0-9_-]+"
-URL_PATTERN = r"(?:https?://|www\.)[^\s)<]+"
+NAME_PATTERN = (
+    r"^(?!.*@)(?!.*\d)"                                     # no emails or digits
+    r"((?:[A-ZÀ-Ý][A-Za-zÀ-ÿ'’\-]+|[A-Z]{2,})"              # first name: titlecase or ALL CAPS
+    r"(?:\s+(?:[A-ZÀ-Ý][A-Za-zÀ-ÿ'’\-]+|[A-Z]{2,}"          # next: titlecase or ALL CAPS
+    r"|(?:[a-z]{1,3}(?=\s+[A-ZÀ-Ý])))"                      # lowercase particles only if followed by capitalized
+    r"){1,4})"
+)
+
+EMAIL_PATTERN = (
+    r"[A-Za-z0-9._%+\-]+@"                     # local part
+    r"(?:[A-Za-z0-9\-]+\.)+"                   # domain labels
+    r"[A-Za-z]{2,24}"                          # TLD
+)
+
+PHONE_PATTERN = (
+    r"(?:\+?\d{1,3}[\s.\-]?)?"                 # country code
+    r"(?:\(?\d{1,4}\)?[\s.\-]?)?"              # optional area code
+    r"\d{2,4}[\s.\-]?\d{2,4}[\s.\-]?\d{2,6}"   # main number
+    r"(?:\s*(?:ext\.?|x)\s*\d{1,5})?"          # extension
+)
+
+LINKEDIN_PATTERN = (
+    r"(?:https?://)?(?:[a-z]{2,3}\.)?linkedin\.com/(?:in|pub)/[A-Za-z0-9_.\-]+/?(?:\?[^\s]*)?"
+)
+
+GITHUB_PATTERN = (
+    r"(?:https?://)?(?:www\.)?github\.com/[A-Za-z0-9._\-]+/?"
+)
+
+URL_PATTERN = (
+    r"(?:https?://|www\.)[^\s)<>\]]+[^\s)<>\],.;!?]"
+)
 
 # --------------------------
 # Education patterns
@@ -55,24 +81,33 @@ LOCATION_PATTERN = (
     r")\s*$"
 )
 DEGREE_TERM_BLOCKLIST = {
-    "science", "mathematics", "statistics", "computer", "data", "applied",
-    "engineering", "arts", "business", "information", "systems",
+    "science", "sciences", "mathematics", "statistics",
+    "computer", "computers", "applied", "engineering",
+    "arts", "business", "information", "systems",
+    "system", "technology", "technologies",
     "intelligence", "analytics",
+    "electrical", "mechanical", "civil",
+    "physics", "chemistry", "biology", "biological",
+    "computational"
 }
+
 
 # --------------------------
 # Experience patterns
 # --------------------------
 EXP_START = [
+    r"professional\s+experience",
     r"experience",
     r"work\s+history",
     r"employment(?:\s+history)?"
 ]
+
 EXP_END = [
     r"education",
     r"skills",
     r"certifications",
-    r"projects"
+    r"projects",
+    r"additional\s+information"
 ]
 MONTH_NAMES_PATTERN = (
     r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|"
@@ -89,10 +124,45 @@ EXPERIENCE_ENTRY_PATTERN = rf"""
 (?P<title>[^\n]+?)\s+
 (?P<start>{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*[-–]\s*
 (?P<end>(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present))\s*\n
-(?P<company>[^\n]+)
-(?:\s+(?P<location>[^\n]+))?
-(?:\n(?P<details>(?:(?!^([^\n]+?\s+(?:{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*[-–]\s*(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present)|(?:{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*[-–]\s*(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present))).*(?:\n|$))*))?
+(?P<company>[A-Za-z0-9&.,\- ]{{3,}})
+(?:\s+(?P<location>[A-Za-z0-9&.,\- ]{{2,}}))?
+(?:\n
+    (?P<details>
+        (?:
+            (?!^(
+                [^\n]+?\s+(?:{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*[-–]\s*(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present)
+                |
+                (?:{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*[-–]\s*(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present)
+            ))
+            .*
+            (?:\n|$)
+        )*
+    )
+)?
 """
+
+# Pipe-delimited experience patterns
+
+EXPERIENCE_PIPE_PATTERN_4 = rf"""
+^
+(?P<title>[^|\n]+?)\s*\|\s*
+(?P<company>[^|\n]+?)\s*\|\s*
+(?P<location>[^|\n]+?)\s*\|\s*
+(?P<start>{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*(?:–|-|to)\s*
+(?P<end>{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present)
+(?:\n(?P<details>(?:.+\n?)*))?
+"""
+
+EXPERIENCE_PIPE_PATTERN_3 = rf"""
+^
+(?P<title>[^|\n]+?)\s*\|\s*
+(?P<company>[^|\n]+?)\s*\|\s*
+(?P<start>{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*(?:–|-|to)\s*
+(?P<end>{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present)
+(?:\n(?P<details>(?:.+\n?)*))?
+"""
+
+
 
 # --------------------------
 # Summary patterns
