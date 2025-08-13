@@ -31,4 +31,3 @@ jobs:
         shell: bash -l {0}
         run: |
           pytest -v --cov=resume_parser --cov-report=term-missing
-EOF
