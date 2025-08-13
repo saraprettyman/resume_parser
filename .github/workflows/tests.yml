@@ -1,35 +1,29 @@
 name: Tests
 
-on:
-  push:
-  pull_request:
+on: [push]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up micromamba (stable)
-        uses: mamba-org/setup-micromamba@v1
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          environment-file: environment.yml
-          cache-environment: true
-          cache-downloads: true
-          init-shell: bash
-          create-args: python=3.10
+          python-version: '3.10'
 
-      - name: Verify environment
-        shell: "bash -l {0}"
+      - name: Install dependencies
         run: |
-          micromamba info
-          micromamba list
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
 
-      - name: Run tests with coverage
-        shell: "bash -l {0}"
-        working-directory: .
+      - name: Run tests with pytest
         run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)
-          pytest -v --cov=resume_parser --cov-report=term-missing
+          pytest tests/ --doctest-modules \
+                 --junitxml=junit/test-results.xml \
+                 --cov=resume_parser \
+                 --cov-report=xml \
+                 --cov-report=html
