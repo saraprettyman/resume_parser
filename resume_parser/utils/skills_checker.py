@@ -1,19 +1,22 @@
 """
-summary_extractor.py
+skills_checker.py
 
-This module defines the SummaryExtractor class, responsible for locating and 
-extracting the "Summary" section from a resume file.
+This module defines the SkillsChecker class, responsible for extracting and
+matching technical skills from resume text against a predefined dataset.
 
 Functionality:
-    - Reads resume content from a file.
-    - Normalizes the text for consistent regex matching.
-    - Searches for the "Summary" section based on configured start and end patterns.
-    - Returns the extracted section as a dictionary.
+    - Loads a comprehensive skills dataset from JSON via `load_skills`.
+    - Retrieves role definitions and their associated skill categories.
+    - Extracts all technical skills present in a resume.
+    - Extracts role-specific technical skills from a resume.
+    - Matches skills (including aliases) in a case-insensitive manner.
 
 Classes:
-    SummaryExtractor:
-        Inherits from BaseExtractor and provides the extract() method for 
-        summary section retrieval.
+    SkillsChecker:
+        Provides methods for:
+            - extract_general_skills(file_path): Extracts all skills across categories.
+            - extract_role_skills(file_path, role): Extracts skills for a specific role.
+            - load_roles(): Returns a list of available roles.
 """
 
 import re
