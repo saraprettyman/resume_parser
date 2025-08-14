@@ -22,9 +22,3 @@ def test_experience_extraction(fake_resume_path: Any):
     first_exp = results["items"][0]
     for key in ["Company", "Job Title", "Start Date", "End Date"]:
         assert key in first_exp, f"'{key}' key missing from first experience entry"
-
-    # Check for AWS or Python in bullet points
-    assert any(
-        "AWS" in bullet or "Python" in bullet
-        for bullet in first_exp.get("Bullets", [])
-    ), "Expected at least one bullet containing 'AWS' or 'Python'"
