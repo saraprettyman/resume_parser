@@ -18,7 +18,8 @@ from resume_parser.config.patterns import (
     DATE_RANGE_PATTERN,
     EXPERIENCE_LOCATION_PATTERN,
     EXPERIENCE_PIPE_PATTERN_4,
-    EXPERIENCE_PIPE_PATTERN_3
+    EXPERIENCE_PIPE_PATTERN_3,
+    EXPERIENCE_PIPE_PATTERN_COMPANY_TITLE
 )
 
 
@@ -41,29 +42,56 @@ class ExperienceExtractor(BaseExtractor):
         date_re = re.compile(DATE_RANGE_PATTERN, flags=re.IGNORECASE)
         location_regex = re.compile(EXPERIENCE_LOCATION_PATTERN, re.IGNORECASE)
 
-        # --- 1) Try strict pipe-delimited header patterns ---
-        pipe_pattern_4 = re.compile(EXPERIENCE_PIPE_PATTERN_4,
-                                    re.MULTILINE |
-                                    re.VERBOSE |
-                                    re.IGNORECASE
-                                    )
-        pipe_pattern_3 = re.compile(EXPERIENCE_PIPE_PATTERN_3,
-                                    re.MULTILINE |
-                                    re.VERBOSE |
-                                    re.IGNORECASE
-                                    )
+        # --- Compile all patterns ---
+        pipe_pattern_company_title = re.compile(
+            EXPERIENCE_PIPE_PATTERN_COMPANY_TITLE,  # NEW
+            re.MULTILINE | re.VERBOSE | re.IGNORECASE
+        )
+        pipe_pattern_4 = re.compile(
+            EXPERIENCE_PIPE_PATTERN_4,
+            re.MULTILINE | re.VERBOSE | re.IGNORECASE
+        )
+        pipe_pattern_3 = re.compile(
+            EXPERIENCE_PIPE_PATTERN_3,
+            re.MULTILINE | re.VERBOSE | re.IGNORECASE
+        )
+        entry_pattern = re.compile(
+            EXPERIENCE_ENTRY_PATTERN,
+            re.MULTILINE | re.VERBOSE
+        )
 
+        # --- Try patterns in priority order ---
+        matches = []
+        for label, pattern in [
+            ("COMPANY | TITLE + DATES", pipe_pattern_company_title),
+            ("PIPE 4", pipe_pattern_4),
+            ("PIPE 3", pipe_pattern_3),
+            ("ENTRY", entry_pattern),
+        ]:
+            matches = list(pattern.finditer(section_text))
+            if matches:
+                break  # stop on first matching format
+
+        # --- Debug if no matches found ---
+        if not matches:
+            print("DEBUG: No matches found — checking why...")
+            print("=== Section Text ===")
+            print(section_text)
+            print("====================")
+            for label, pattern in [
+                ("COMPANY | TITLE + DATES", pipe_pattern_company_title),
+                ("PIPE 4", pipe_pattern_4),
+                ("PIPE 3", pipe_pattern_3),
+                ("ENTRY", entry_pattern),
+            ]:
+                print(f"\n--- Testing pattern: {label} ---")
+                test_matches = list(pattern.finditer(section_text))
+                print(f"Found {len(test_matches)} matches")
+                for i, m in enumerate(test_matches, 1):
+                    print(f"Match {i}: {m.groupdict()}")
+
+        # --- Build items ---
         items = []
-        matches = list(pipe_pattern_4.finditer(section_text))
-
-        if not matches:
-            matches = list(pipe_pattern_3.finditer(section_text))
-
-        if not matches:
-            # --- 2) Fallback: standard multi-line header detection ---
-            entry_pattern = re.compile(EXPERIENCE_ENTRY_PATTERN, re.MULTILINE | re.VERBOSE)
-            matches = list(entry_pattern.finditer(section_text))
-
         for match in matches:
             gd = match.groupdict()
             title = (gd.get("title") or "").strip()
@@ -73,11 +101,13 @@ class ExperienceExtractor(BaseExtractor):
             end = (gd.get("end") or "").strip()
             details_text = (gd.get("details") or "").strip()
 
-            free_lines, bullets = self._extract_details(details_text,
-                                                        date_re,
-                                                        title,
-                                                        company,
-                                                        location_regex)
+            free_lines, bullets = self._extract_details(
+                details_text,
+                date_re,
+                title,
+                company,
+                location_regex
+            )
             free_text = "\n".join(free_lines).strip()
 
             items.append({
@@ -89,7 +119,6 @@ class ExperienceExtractor(BaseExtractor):
                 "Details": free_text,
                 "Bullets": bullets
             })
-
 
         return {"section": section_text, "items": items}
 

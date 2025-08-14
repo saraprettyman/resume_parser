@@ -177,6 +177,24 @@ EXPERIENCE_PIPE_PATTERN_3 = rf"""
 (?:\n(?P<details>(?:.+\n?)*))?
 """
 
+EXPERIENCE_PIPE_PATTERN_COMPANY_TITLE = rf"""
+^
+(?P<company>[^|\n]+?)\s*\|\s*
+(?P<title>[^\n]+?)\s+
+(?P<start>{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*(?:–|-|to)\s*
+(?P<end>{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present)
+(?:\n
+    (?P<details>
+        (?:
+            (?!^[^|\n]+?\s*\|\s*[^\n]+?\s+{MONTH_NAMES_PATTERN}\s+\d{{4}})  # stop if new job header
+            .*
+            (?:\n|$)
+        )*
+    )
+)?
+"""
+
+
 # --------------------------
 # Summary patterns
 # --------------------------
