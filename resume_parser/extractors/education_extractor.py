@@ -6,7 +6,6 @@ and additional details.
 """
 import re
 from typing import Optional
-from venv import logger
 from resume_parser.extractors.base_extractor import BaseExtractor
 from resume_parser.utils.file_reader import read_resume
 from resume_parser.utils.section_finder import find_section
@@ -76,186 +75,123 @@ class EducationExtractor(BaseExtractor):
             return None
         return cand.strip()
 
+    def _normalize_text(self, section: str) -> tuple[str, list[str]]:
+        text = section.replace("•", " ").replace("\t", " ").strip()
+        text = re.sub(r"[ ]{2,}", " ", text)
+        lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        return text, lines
+
+    def _extract_grad_date(self, text: str) -> str:
+        match = re.search(DATE_RANGE, text, re.IGNORECASE)
+        return match.group(0).strip() if match else ""
+
+    def _extract_location(self, lines: list[str]) -> str:
+        for ln in lines[:3]:
+            loc_match = re.search(LOCATION_PATTERN, ln, re.IGNORECASE)
+            if loc_match:
+                cand = self._sanitize_location_candidate(loc_match.group(1).strip())
+                if cand:
+                    return cand
+        return ""
+
+    def _extract_institution(self, lines: list[str], grad_date: str, location: str) -> str:
+        gpa_re = re.compile(GPA_PATTERN, re.IGNORECASE)
+        line = next((ln for ln in lines if not (
+            gpa_re.search(ln) or
+            re.search(MINORS_PATTERN, ln, re.IGNORECASE) or
+            "project" in ln.lower()
+        )), "")
+        if grad_date:
+            line = line.replace(grad_date, "")
+        if location:
+            line = line.replace(location, "")
+        return line.strip(" ,;:-")
+
+    def _extract_degree_emphasis(self, lines: list[str], location: str) -> tuple[str, str]:
+        idx = next((i for i, ln in enumerate(lines)
+                    if re.search(DEGREE_KEYWORD_PATTERN,
+                                 ln, re.IGNORECASE)), None
+        )
+        degree_line = lines[idx] if idx is not None else (lines[1] if len(lines) > 1 else lines[0])
+        if location:
+            degree_line = degree_line.replace(location, "").strip(",;:- ")
+        match = re.search(r"(?P<degree>(?:Bachelor(?:'s)?|Master(?:'s)?|Associate(?:'s)?|Doctor(?:ate)?|B\.S\.|M\.S\.|Ph\.?D)[^:,\n]*)", degree_line, re.IGNORECASE) # pylint: disable=line-too-long
+        degree = match.group("degree").strip() if match else ""
+        emphasis = degree_line.replace(degree, "").strip(" ,:-") if degree else ""
+        return degree, emphasis
+
+    def _extract_gpa(self, text: str) -> str:
+        gpa_m = re.search(GPA_PATTERN, text, re.IGNORECASE)
+        if gpa_m:
+            if gpa_m.group(2):
+                return f"{gpa_m.group(1)}/{gpa_m.group(2)}"
+            return gpa_m.group(1)
+        return ""
+
+    def _extract_minors(self, text: str) -> str:
+        minors_m = re.search(MINORS_PATTERN, text, re.IGNORECASE)
+        return minors_m.group(1).strip().replace("\n", "; ") if minors_m else ""
+
+    def _extract_details(
+    self, text: str, lines: list[str],
+    institution: str, degree: str,
+    location: str, gpa: str, minors: str
+    ) -> str:
+        used_lines = {
+            institution.strip(),
+            degree.strip(),
+            location.strip(),
+            gpa.strip(),
+            minors.strip()
+        }
+        details_parts = []
+
+        # Extract from projects and scholarships
+        for pattern in [PROJECTS_PATTERN, SCHOLARSHIPS_PATTERN]:
+            m = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+            if m:
+                clean_text = re.sub(r"\s*\n\s*", "; ", m.group(1).strip())
+                details_parts.append(clean_text)
+
+        # Remaining unused lines
+        for ln in lines:
+            if ln.strip() in used_lines:
+                continue
+            if re.search(PROJECTS_PATTERN, ln, re.IGNORECASE):
+                continue
+            if re.search(SCHOLARSHIPS_PATTERN, ln, re.IGNORECASE):
+                continue
+            details_parts.append(ln.strip())
+
+        return "; ".join(p for p in details_parts if p)
+
+
+
     def parse_education(self, section: str) -> list[dict]:
         """
-        Parse the education section text into structured items.
-        
-        Handles:
-        - Institution name
-        - Location
-        - Graduation date
-        - Degree + Emphasis
-        - GPA
-        - Minors
-        - Project and scholarship details
-        - Any remaining descriptive details
+        Parse the education section into structured items.
         """
-        items = []
-        try:
-            if not section.strip():
-                return items
+        if not section.strip():
+            return []
 
-            # Normalize text and split into lines
-            text = section.replace("•", " ").replace("\t", " ").strip()
-            text = re.sub(r"[ ]{2,}", " ", text)
-            lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
-            if not lines:
-                return items
+        text, lines = self._normalize_text(section)
+        grad_date = self._extract_grad_date(text)
+        location = self._extract_location(lines)
+        institution = self._extract_institution(lines, grad_date, location)
+        degree, emphasis = self._extract_degree_emphasis(lines, location)
+        gpa_val = self._extract_gpa(text)
+        minors_val = self._extract_minors(text)
+        details_val = self._extract_details(text, lines, institution,
+                                            degree, location, gpa_val,
+                                            minors_val)
 
-            # Graduation Date
-            grad_match = re.search(DATE_RANGE, text, re.IGNORECASE)
-            grad_date = grad_match.group(0).strip() if grad_match else ""
-
-            # Location
-            location = ""
-            for ln in lines[:3]:  # Check early lines first
-                loc_match = re.search(LOCATION_PATTERN, ln, re.IGNORECASE)
-                if loc_match:
-                    cand = self._sanitize_location_candidate(loc_match.group(1).strip())
-                    if cand:
-                        location = cand
-                        break
-            if not location:  # Secondary check inside degree lines
-                degree_line_candidate = next(
-                    (ln for ln in lines if re.search(DEGREE_KEYWORD_PATTERN, ln, re.IGNORECASE)),
-                    None
-                )
-                if degree_line_candidate:
-                    loc_match = re.search(LOCATION_PATTERN, degree_line_candidate, re.IGNORECASE)
-                    if loc_match:
-                        cand = self._sanitize_location_candidate(loc_match.group(1).strip())
-                        if cand:
-                            location = cand
-
-            # Institution
-            gpa_re = re.compile(
-                GPA_PATTERN,
-                re.IGNORECASE
-            )
-            institution_line = next(
-                (ln for ln in lines if not (
-                    gpa_re.search(ln) or
-                    re.search(MINORS_PATTERN,
-                              ln, re.IGNORECASE
-                              ) or
-                              "project" in ln.lower()
-                              )
-                              ),
-                ""
-            ).strip(" |,;-")
-            if grad_date:
-                institution_line = institution_line.replace(grad_date, "").strip(",;- ")
-            if location:
-                institution_line = institution_line.replace(location, "").strip(" ,;:-")
-            institution = institution_line
-
-            # Degree & Emphasis
-            degree_idx = next(
-                (i for i,
-                 ln in enumerate(lines)
-                 if re.search(DEGREE_KEYWORD_PATTERN,
-                              ln, re.IGNORECASE)
-                              ), None
-                              )
-            degree_line = (lines[degree_idx]
-                           if degree_idx is not None
-                           else (lines[1]
-                                 if len(lines) > 1
-                                 else lines[0]
-                                 )
-                                 )
-            if location:
-                degree_line = degree_line.replace(location, "").strip(",;:- ")
-
-            degree_match = re.search(
-                r"(?P<degree>("
-                r"?:Bachelor(?:'s)?[^:,\n]*|"
-                r"Master(?:'s)?[^:,\n]*|"
-                r"Associate(?:'s)?[^:,\n]*|"
-                r"Doctor(?:ate)?[^:,\n]*|"
-                r"B\.S\.[^:,\n]*|"
-                r"M\.S\.[^:,\n]*|"
-                r"Ph\.?D[^:,\n]*"
-                r"))",
-                degree_line,
-                re.IGNORECASE,
-            )
-            degree = degree_match.group("degree").strip() if degree_match else ""
-            emphasis = ""
-            if ":" in degree_line:
-                emphasis = degree_line.split(":", 1)[1].strip()
-            elif degree:
-                emphasis = degree_line.replace(degree, "").strip(" ,:-")
-
-            # GPA
-            gpa_val = ""
-            gpa_m = gpa_re.search(text)
-            if gpa_m:
-                gpa_val = f"{gpa_m.group(1)}/{gpa_m.group(2)}" if gpa_m.group(2) else gpa_m.group(1)
-
-            # Minors
-            minors_val = ""
-            minors_m = re.search(MINORS_PATTERN, text, re.IGNORECASE)
-            if minors_m:
-                minors_val = minors_m.group(1).strip().replace("\n", "; ")
-
-            # Details
-            details_parts = []
-
-            projects_m = re.search(PROJECTS_PATTERN, text, re.IGNORECASE | re.DOTALL)
-            if projects_m:
-                details_parts.append(re.sub(r"\s*\n\s*", "; ", projects_m.group(1).strip()))
-
-            scholarships_m = re.search(SCHOLARSHIPS_PATTERN, text, re.IGNORECASE | re.DOTALL)
-            if scholarships_m:
-                details_parts.append(re.sub(r"\s*\n\s*", "; ", scholarships_m.group(1).strip()))
-
-            # Remaining lines that aren't already used
-            used_lines = {
-                institution.strip(),
-                degree_line.strip(),
-                location.strip(),
-                gpa_val.strip(),
-                minors_val.strip(),
-            }
-            for ln in lines:
-                if not ln or ln.strip() in used_lines:
-                    continue
-                if (
-                    re.search(PROJECTS_PATTERN, ln, re.IGNORECASE)
-                    or re.search(SCHOLARSHIPS_PATTERN, ln, re.IGNORECASE)
-                ):
-
-                    continue
-                details_parts.append(ln.strip())
-
-            details_val = "; ".join(p for p in details_parts if p)
-
-
-            # Final degree + emphasis
-            degree_emphasis = degree
-            if emphasis:
-                degree_emphasis = f"{degree_emphasis}: {emphasis}" if degree_emphasis else emphasis
-
-            items.append({
-                "Institution": institution,
-                "Location": location,
-                "Graduation Date": grad_date,
-                "Degree & Emphasis": degree_emphasis,
-                "GPA": gpa_val,
-                "Minors": minors_val,
-                "Details": details_val
-            })
-            return items
-
-        except Exception:  # pylint: disable=broad-exception-caught
-            logger.exception("Education parsing failed")
-            return [{
-                "Institution": section.strip(),
-                "Location": "",
-                "Graduation Date": "",
-                "Degree & Emphasis": "",
-                "GPA": "",
-                "Minors": "",
-                "Details": ""
-            }]
+        return [{
+            "Institution": institution,
+            "Location": location,
+            "Graduation Date": grad_date,
+            "Degree & Emphasis": f"{degree}: {emphasis}" if emphasis
+            and degree else emphasis or degree,
+            "GPA": gpa_val,
+            "Minors": minors_val,
+            "Details": details_val
+        }]
