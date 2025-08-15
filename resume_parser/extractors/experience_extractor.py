@@ -143,7 +143,7 @@ class ExperienceExtractor(BaseExtractor):
                     free_lines.append(s)
         return free_lines, bullets
 
-    def _extract_details(self, details_region, date_re, job_title, company, location_regex): # pylint: disable=too-many-arguments, too-many-positional-arguments
+    def _extract_details(self, details_region, date_re, job_title, company, location_regex): # pylint: disable=too-many-positional-arguments, too-many-arguments
         if not details_region:
             return [], []
 

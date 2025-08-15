@@ -86,6 +86,54 @@ pytest
 ```
 We welcome contributions. If you’d like to add a feature or fix a bug, open an issue or submit a pull request.
 
+## 📂 Project Structure
+```
+.
+├── 📄 environment.yml               # Conda environment setup
+├── 📜 LICENSE
+├── ⚙️ pyproject.toml                 # Build & tooling config
+├── 📘 README.md
+├── 📄 requirements.txt               # Runtime dependencies
+├── 📄 requirements-dev.txt           # Dev/test dependencies
+├── 📦 setup.py                       # Package installer
+├── 📂 resume_parser/                 # Main package
+│   ├── __init__.py
+│   ├── 🚀 main.py                     # Entry point
+│   ├── 💻 cli.py                      # CLI interface
+│   ├── 📂 config/
+│   │   └── 📜 patterns.py             # Regex & parsing patterns
+│   ├── 📂 data/
+│   │   └── 📊 skills_master.json      # Master skills dataset
+│   ├── 📂 extractors/                 # Resume section parsers
+│   │   ├── 🏗️ base_extractor.py
+│   │   ├── 📇 contact_extractor.py
+│   │   ├── 🎓 education_extractor.py
+│   │   ├── 💼 experience_extractor.py
+│   │   └── 📝 summary_extractor.py
+│   └── 📂 utils/                      # Helper utilities
+│       ├── 🖥️ display.py
+│       ├── 📂 file_reader.py
+│       ├── 🔍 regex_helpers.py
+│       ├── 📍 section_finder.py
+│       ├── 🛠️ skills_checker.py
+│       ├── 📋 skills_list_loader.py
+│       └── ✏️ text_normalizer.py
+└── 🧪 tests/                          # Test suite
+    ├── 🛠️ conftest.py
+    ├── 📂 data/
+    │   ├── 🖼️ cli_screenshot_1.png
+    │   ├── 🖼️ cli_screenshot_2.png
+    │   └── 📂 fake_resumes/
+    │       └── 📄 fake_resume.pdf
+    ├── 🧪 test_cli_integration.py
+    ├── 🧪 test_contact_extractor.py
+    ├── 🧪 test_education_extractor.py
+    ├── 🧪 test_experience_extractor.py
+    └── 🧪 test_skills_checker.py
+```
+### 📂 Project Structure
+![Project Structure](./project_structure_banner.svg)
+
 ## 🗺 Roadmap (High-Impact Features First)
 * **Resume vs Job Description Match Score**: Keyword overlap %, missing skills, ATS tips.
 * **Web Interface**: Drag-and-drop resume analysis in the browser.
