@@ -4,7 +4,7 @@ from typing import Any
 from resume_parser.extractors.education_extractor import EducationExtractor
 
 
-def test_education_extraction(fake_resume_path: Any):
+def test_education_extraction(fake_resume_path: Any): # pylint: disable: duplicate-code
     """
     Validates that EducationExtractor can parse educational entries
     with required fields from a fake resume.

@@ -4,7 +4,7 @@ from typing import Any
 from resume_parser.extractors.experience_extractor import ExperienceExtractor
 
 
-def test_experience_extraction(fake_resume_path: Any):
+def test_experience_extraction(fake_resume_path: Any): # pylint: disable: duplicate-code
     """
     Validates that ExperienceExtractor can parse work experience entries
     with required fields from a fake resume.

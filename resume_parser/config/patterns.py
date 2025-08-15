@@ -146,9 +146,9 @@ EXPERIENCE_ENTRY_PATTERN = rf"""
     (?P<details>
         (?:
             (?!^(
-                [^\n]+?\s+(?:{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*[-–]\s*(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present)
+                [^\n]+?\s+(?:{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*[-–]\s*(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present) # pylint: disable=line-too-long
                 |
-                (?:{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*[-–]\s*(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present)
+                (?:{MONTH_NAMES_PATTERN}\s+\d{{4}})\s*[-–]\s*(?:{MONTH_NAMES_PATTERN}\s+\d{{4}}|Present) # pylint: disable=line-too-long
             ))
             .*
             (?:\n|$)

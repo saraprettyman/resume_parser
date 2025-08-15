@@ -133,13 +133,13 @@ def read_resume(file_path: str) -> str:
     ext = os.path.splitext(file_path)[1].lower()
     if ext == ".pdf":
         return read_pdf(file_path)
-    elif ext == ".docx":
+    if ext == ".docx":
         return read_docx(file_path)
-    elif ext == ".doc":
+    if ext == ".doc":
         return read_doc(file_path)
-    elif ext in [".rtf", ".odt", ".md", ".html", ".htm"]:
+    if ext in [".rtf", ".odt", ".md", ".html", ".htm"]:
         return read_with_pandoc(file_path)
-    elif ext == ".txt":
+    if ext == ".txt":
         return read_txt(file_path)
     else:
         raise ValueError(f"Unsupported file type: {ext}")

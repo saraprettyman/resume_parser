@@ -51,7 +51,7 @@ def print_section_title(title: str) -> None:
     )
     console.print(panel)
 
-def run_cli(mode_choice: str, sub_mode: Optional[str], file_path: str) -> None:
+def run_cli(mode_choice: str, sub_mode: Optional[str], file_path: str) -> None: # pylint: disable=too-many-locals
     """Run the CLI logic based on mode and file path."""
     file_path_obj = Path(file_path)
     ext = file_path_obj.suffix.lower()
