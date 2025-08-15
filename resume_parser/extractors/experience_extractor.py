@@ -32,7 +32,7 @@ class ExperienceExtractor(BaseExtractor):
       - Mixed formats
     """
 
-    def extract(self, file_path: str) -> dict:
+    def extract(self, file_path: str) -> dict: # pylint: disable=too-many-locals
         text = self.normalize(read_resume(file_path))
         section_text = find_section(text, EXP_START, EXP_END)
 
@@ -143,17 +143,17 @@ class ExperienceExtractor(BaseExtractor):
                     free_lines.append(s)
         return free_lines, bullets
 
-    def _extract_details(self, details_region, date_re, job_title, company, location_regex):
+    def _extract_details(self, details_region, date_re, job_title, company, location_regex): # pylint: disable=too-many-arguments, too-many-positional-arguments
         if not details_region:
             return [], []
 
-        raw_lines = [ln for ln in re.split(r"\n+", details_region)]
+        raw_lines = list(re.split("\\n+", details_region))
         filtered = []
         for ln in raw_lines:
             ln_str = ln.strip()
             if not ln_str:
                 continue
-            if ln_str == job_title or ln_str == company:
+            if ln_str == job_title or ln_str == company: # pylint: disable=consider-using-in
                 continue
             if date_re.search(ln_str):
                 continue
@@ -162,4 +162,3 @@ class ExperienceExtractor(BaseExtractor):
             filtered.append(ln)
 
         return self._collect_bullets(filtered)
-    

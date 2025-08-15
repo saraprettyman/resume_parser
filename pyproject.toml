@@ -20,7 +20,6 @@ dependencies = [
     "pypandoc==1.13",
     "pdf2image==1.17.0",
     "pytesseract==0.3.10",
-    "spacy==3.7.4"
 ]
 
 [tool.setuptools.packages.find]

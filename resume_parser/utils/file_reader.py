@@ -141,5 +141,4 @@ def read_resume(file_path: str) -> str:
         return read_with_pandoc(file_path)
     if ext == ".txt":
         return read_txt(file_path)
-    else:
-        raise ValueError(f"Unsupported file type: {ext}")
+    raise ValueError(f"Unsupported file type: {ext}")

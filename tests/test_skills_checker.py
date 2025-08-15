@@ -1,3 +1,4 @@
+# pylint: disable=duplicate-code
 """Tests for SkillsChecker to ensure general skills are correctly extracted."""
 
 from typing import Any

@@ -1,10 +1,11 @@
+# pylint: disable=duplicate-code
 """Tests for the ExperienceExtractor, ensuring work history is correctly parsed."""
 
 from typing import Any
 from resume_parser.extractors.experience_extractor import ExperienceExtractor
 
 
-def test_experience_extraction(fake_resume_path: Any): # pylint: disable: duplicate-code
+def test_experience_extraction(fake_resume_path: Any):
     """
     Validates that ExperienceExtractor can parse work experience entries
     with required fields from a fake resume.

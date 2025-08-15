@@ -132,7 +132,7 @@ class EducationExtractor(BaseExtractor):
         minors_m = re.search(MINORS_PATTERN, text, re.IGNORECASE)
         return minors_m.group(1).strip().replace("\n", "; ") if minors_m else ""
 
-    def _extract_details(
+    def _extract_details( # pylint: disable=too-many-arguments, too-many-positional-arguments
     self, text: str, lines: list[str],
     institution: str, degree: str,
     location: str, gpa: str, minors: str

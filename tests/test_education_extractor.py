@@ -1,10 +1,11 @@
+# pylint: disable=duplicate-code
 """Tests for the EducationExtractor, ensuring educational history is correctly parsed."""
 
 from typing import Any
 from resume_parser.extractors.education_extractor import EducationExtractor
 
 
-def test_education_extraction(fake_resume_path: Any): # pylint: disable: duplicate-code
+def test_education_extraction(fake_resume_path: Any):
     """
     Validates that EducationExtractor can parse educational entries
     with required fields from a fake resume.
