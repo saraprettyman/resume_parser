@@ -15,10 +15,10 @@
 <div><br><br></div>
 
 ## 💡 Why This Exists
-ATS and recruiter software often strip away formatting, bullets, and design elements — leaving a plain-text version of your resume that can look very different from the PDF you submit. **Resume Parser** reveals that hidden view so you can improve based on facts, not guesswork. Runs entirely **offline** — your data never leaves your machine.
+ATS and recruiter software often strip away **formatting, bullets, and design elements** — leaving a plain-text version of your resume that can look very different from the PDF you submit. **Resume Parser** reveals that hidden view so you can improve based on facts, not guesswork. Runs entirely **offline** — your data never leaves your machine.
 
 
-This is a project by **Digital Resume Solutions LLC**, created with a privacy-first approach. Everything runs locally on your machine — your data never leaves your computer.
+This is a project by **Digital Resume Solutions LLC**, created with a privacy-first approach.
 
 
 ## 🚀 Features
@@ -28,16 +28,17 @@ This is a project by **Digital Resume Solutions LLC**, created with a privacy-fi
 - **Formatting audit** – Spot lost layout, bullets, or special chars.  
 - **Privacy-first** – 100% local processing.
 
+## 🔍 Why Not Use Free Online ATS Scanners?
+| Free Online Scanners | **Resume Parser** |
+|----------------------|-------------------|
+| Uploads your private resume to the cloud | Runs 100% offline on your machine |
+| Opaque algorithms | Transparent, open-source code |
+| Limited control over data retention | You keep total control |
+| Requires subscription, limited # of scans | Unlimited scans — completely free, no catch |
 
-## 🛠 Skills Checker
-<div align="center">
-  <img src="tests/data/cli_screenshot_2.png" alt="Skills Checker" width="60%">
-</div>  
-
-Scan your resume for **general** or **role-specific** skills from a curated dataset.  
-See what’s recognized — and what’s missing.
 
 ## 📦 Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/saraprettyman/resume_parser.git
@@ -49,6 +50,7 @@ source .venv/bin/activate  # or .venv\Scripts\activate on Windows
 
 # Install dependencies
 pip install -e .
+
 ```
 
 ## 🚀 Launch interactive mode
@@ -61,18 +63,35 @@ You’ll be guided through:
 2. Choosing analysis modes (ATS, Skills)
 3. Viewing results in your terminal
 
+## ✅ Skills Checker
+<div align="center">
+  <img src="tests/data/cli_screenshot_2.png" alt="Skills Checker" width="68%">
+</div>  
+
+Scan your resume for **general** or **role-specific** skills from a curated dataset.  
+See what’s recognized — and what’s missing.
+
 ## 🛠  Development
 For local development with tests:
 ```bash
-python -m resume_parser.cli
+# Create and activate environment
+python -m venv .venv
+source .venv/bin/activate
+
+# Install dev dependencies
+pip install -r requirements-dev.txt
+
+# Run tests
+pytest
 ```
 We welcome contributions. If you’d like to add a feature or fix a bug, open an issue or submit a pull request.
 
-## 🗺 Roadmap
-* Web interface for drag-and-drop uploads
-* Side-by-side diff view of original vs parsed text
-* Job posting integration for direct keyword comparison
-* Chrome extention
+## 🗺 Roadmap (High-Impact Features First)
+* **Resume vs Job Description Match Score**: Keyword overlap %, missing skills, ATS tips.
+* **Web Interface**: Drag-and-drop resume analysis in the browser.
+* **Career Change Resume Translator**: Maps skills from one industry to equivalent terms in another.
+* **Open Resume Benchmark**: Aggregate anonymous resume data to reveal top skills by industry & role.
+
 
 ## 📜 License
 This project is licensed under the GPLv3 License.
