@@ -131,8 +131,6 @@ We welcome contributions. If you’d like to add a feature or fix a bug, open an
     ├── 🧪 test_experience_extractor.py
     └── 🧪 test_skills_checker.py
 ```
-### 📂 Project Structure
-![Project Structure](./project_structure_banner.svg)
 
 ## 🗺 Roadmap (High-Impact Features First)
 * **Resume vs Job Description Match Score**: Keyword overlap %, missing skills, ATS tips.
